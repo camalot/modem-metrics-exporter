@@ -11,6 +11,7 @@ class BroadbandStatisticsProbe(Probe):
         self.name = self.__class__.__name__
         self.logger.debug(f'Starting {self.name}')
         self.enabled = True
+        self.interval = 120
         self.topic = 'modemprobe/broadbandstats'
         self.endpoint = '/cgi-bin/broadbandstatistics.ha'
         self.stats_pattern = r'<th[^>]*>(?P<name>.*?)(?:&nbsp;)*?\s*<\/th>\s*?<td[^>]*>\s*?(?P<value>.*?)\s*?<\/td>'

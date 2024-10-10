@@ -13,7 +13,7 @@ class HomeNetworkStatsProbe(Probe):
         self.endpoint = '/cgi-bin/lanstatistics.ha'
         self.topic = 'modemprobe/lanstats'
         self.enabled = True
-        self.interval = 60
+        self.interval = 120
         self.help_pattern = r'<strong>(?P<property>.*?):</strong>\s*(?P<help>.*?)<br\s*/><br\s*/>'
 
         self.groups = [

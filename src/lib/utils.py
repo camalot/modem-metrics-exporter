@@ -1,4 +1,5 @@
-
+import typing
+from datetime import datetime, timedelta
 def is_booleanable(value: str) -> bool:
     return value.lower() in ('disabled', 'enabled', 'down', 'up', 'unavailable', 'available', 'off', 'on')
 
@@ -7,3 +8,79 @@ def to_boolean(value: str) -> bool:
 
 def to_int_from_boolean(value: bool) -> int:
     return 1 if value else 0
+
+def datetime_to_epoch(value: typing.Optional[datetime]) -> float:
+    if not value:
+        print('datetime_to_epoch: value is None')
+        return 0.0
+    return float(value.timestamp())
+
+def is_timedelta(value: str, fmt: str = "") -> bool:
+    if ':' not in value:
+        return False
+
+    # years:days:hours:minutes:seconds
+    values = value.split(":")
+
+    if len(values) > 4 or len(values) < 1:
+        return False
+
+    days = 0
+    hours = 0
+    minutes = 0
+    seconds = 0
+    if len(values) >= 4:
+        days = int(values[0])
+        hours = int(values[1])
+        minutes = int(values[2])
+        seconds = int(values[3])
+    if len(values) >= 3:
+        hours = int(values[0])
+        minutes = int(values[1])
+        seconds = int(values[2])
+    if len(values) >= 2:
+        minutes = int(values[0])
+        seconds = int(values[1])
+    if len(values) >= 1:
+        seconds = int(values[0])
+    if len(values) == 0 or len(values) > 4:
+        return False
+    timedelta(days=days, hours=hours, minutes=minutes, seconds=seconds)
+    return True
+
+def to_timedelta(value: str, fmt: str = "") -> timedelta:
+    # days:hours:minutes:seconds
+    values = value.split(":")
+    days = 0
+    hours = 0
+    minutes = 0
+    seconds = 0
+    if len(values) == 4:
+        days = int(values[0])
+        hours = int(values[1])
+        minutes = int(values[2])
+        seconds = int(values[3])
+    if len(values) >= 3:
+        hours = int(values[0])
+        minutes = int(values[1])
+        seconds = int(values[2])
+    if len(values) >= 2:
+        minutes = int(values[0])
+        seconds = int(values[1])
+    if len(values) >= 1:
+        seconds = int(values[0])
+    return timedelta(days=days, hours=hours, minutes=minutes, seconds=seconds)
+
+def is_datetime(value: str, fmt: str = '%Y-%m-%d %H:%M:%S') -> bool:
+    try:
+        datetime.strptime(value, fmt)
+        return True
+    except ValueError:
+        return False
+
+def to_datetime(value: str, fmt: str = '%Y-%m-%d %H:%M:%S') -> typing.Optional[datetime]:
+    try:
+        return datetime.strptime(value, fmt)
+    except ValueError:
+        print(f'to_datetime: value {value} is not a valid datetime')
+        return None

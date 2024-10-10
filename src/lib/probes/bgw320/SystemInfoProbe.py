@@ -13,6 +13,7 @@ class SystemInfoProbe(Probe):
         self.topic = 'modemprobe/systeminfo'
         self.endpoint = '/cgi-bin/sysinfo.ha'
         self.enabled = True
+        self.interval = 120
         self.pattern = r'<th[^>]+>(?P<name>.*?)\s*<\/th>\s+?<td[^>]+>(?P<value>.*?)<\/td>'
         self.help_pattern = r'<strong>(?P<property>.*?):</strong>\s*(?P<help>.*?)<br\s*/><br\s*/>'
 

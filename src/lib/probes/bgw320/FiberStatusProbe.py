@@ -12,7 +12,7 @@ class FiberStatusProbe(Probe):
         self.logger.debug(f'Starting {self.name}')
         self.topic = 'modemprobe/fiberstatus'
         self.enabled = True
-        self.interval = 60
+        self.interval = 120
 
         self.endpoint = '/cgi-bin/fiberstat.ha'
         self.help_pattern = r'<strong>(?P<property>.*?):</strong>\s*(?P<help>.*?)<br\s*/><br\s*/>'

@@ -16,7 +16,7 @@ class Probe:
         self.enabled = False
         self.endpoint = None
         self.topic = None
-        self.interval = 60
+        self.interval = 120
         self.name = "Probe"
         self.datastore = DataStoreTypes.from_str("FILE")
         signal.signal(signal.SIGTERM, self.sighandler)

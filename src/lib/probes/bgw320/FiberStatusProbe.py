@@ -10,10 +10,11 @@ class FiberStatusProbe(Probe):
         super().__init__()
         self.name = self.__class__.__name__
         self.logger.debug(f'Starting {self.name}')
-
-        self.endpoint = '/cgi-bin/fiberstat.ha'
         self.topic = 'modemprobe/fiberstatus'
         self.enabled = True
+        self.interval = 60
+
+        self.endpoint = '/cgi-bin/fiberstat.ha'
         self.help_pattern = r'<strong>(?P<property>.*?):</strong>\s*(?P<help>.*?)<br\s*/><br\s*/>'
 
         self.groups = [
@@ -30,7 +31,7 @@ class FiberStatusProbe(Probe):
                 'stats': r'<td[^>]*>(?P<name>.*?)(?:&nbsp;)*?\s*<\/td>\s*?<td[^>]*>\s*?(?P<low>\d{1,})\s*\(Threshold\s*(?P<lowT>\-?\d{1,}\.\d{1,})\)<\/td>\s*<td[^>]*>\s*?(?P<high>\d{1,})\s*\(Threshold\s*(?P<highT>\-?\d{1,}\.\d{1,})\)<\/td>\s*',
             },
             {
-                'name': 'voltage',
+                'name': 'vcc',
                 'options': re.IGNORECASE | re.MULTILINE,
                 'pattern': r'<h1>(?P<section>Vcc)(:?&nbsp;){2}Currently\s*(?P<value>.*?)\s*</h1>\s*?<table.*?>(?P<stats>.*?)</table>\s*</div>',
                 'stats': r'<td[^>]*>(?P<name>.*?)(?:&nbsp;)*?\s*<\/td>\s*?<td[^>]*>\s*?(?P<low>\d{1,})\s*\(Threshold\s*(?P<lowT>\-?\d{1,}\.\d{1,})\)<\/td>\s*<td[^>]*>\s*?(?P<high>\d{1,})\s*\(Threshold\s*(?P<highT>\-?\d{1,}\.\d{1,})\)<\/td>\s*',
@@ -48,7 +49,7 @@ class FiberStatusProbe(Probe):
                 'stats': r'<td[^>]*>(?P<name>.*?)(?:&nbsp;)*?\s*<\/td>\s*?<td[^>]*>\s*?(?P<low>\d{1,})\s*\(Threshold\s*(?P<lowT>\-?\d{1,}\.\d{1,})\)<\/td>\s*<td[^>]*>\s*?(?P<high>\d{1,})\s*\(Threshold\s*(?P<highT>\-?\d{1,}\.\d{1,})\)<\/td>\s*',
             },
             {
-                'name': 'txpower',
+                'name': 'rxpower',
                 'options': re.IGNORECASE | re.MULTILINE,
                 'pattern': r'<h1>(?P<section>Rx Power)(:?&nbsp;){2}Currently\s*(?P<value>.*?)\s*</h1>\s*?<table.*?>(?P<stats>.*?)</table>\s*</div>',
                 'stats': r'<td[^>]*>(?P<name>.*?)(?:&nbsp;)*?\s*<\/td>\s*?<td[^>]*>\s*?(?P<low>\d{1,})\s*\(Threshold\s*(?P<lowT>\-?\d{1,}\.\d{1,})\)<\/td>\s*<td[^>]*>\s*?(?P<high>\d{1,})\s*\(Threshold\s*(?P<highT>\-?\d{1,}\.\d{1,})\)<\/td>\s*',
@@ -60,15 +61,15 @@ class FiberStatusProbe(Probe):
         for group in self.groups:
             matches = re.finditer(group['pattern'], response, re.IGNORECASE | re.DOTALL)
             for _, match in enumerate(matches):
-                section = group.get('name')
+                section = group.get('name', 'unknown').lower().strip().replace('&nbsp;', '').replace(' ', '')
                 stats = match.group('stats')
                 if section not in result:
                     result[section] = {}
-                if 'value' in match.groupdict():
-                    result[section]['value'] = match.group('value')
                 stats_results = self.parse_stats(section, stats, group['stats'], options=group['options'])
                 if stats_results:
-                    result[section].update(stats_results)
+                    result.update(stats_results)
+                if 'value' in match.groupdict():
+                    result[section]['value'] = float(match.group('value') or '0')
         # get all help text
         matches = re.finditer(self.help_pattern, response, re.IGNORECASE | re.MULTILINE)
         if 'metadata' not in result:
@@ -78,14 +79,14 @@ class FiberStatusProbe(Probe):
         for _, match in enumerate(matches):
             property = match.group('property')
             help = match.group('help')
-            result['metadata']['help'][property] = help
+            result['metadata']['help'][property.replace(' ', '').lower()] = help
         return result
 
     def parse_stats(self, section, stats, pattern, **kwargs) -> dict:
         result = {}
         matches = re.finditer(pattern, stats, kwargs['options'])
         for _, match in enumerate(matches):
-            name = match.group('name')
+            name = match.group('name').lower().strip().replace('&nbsp;', '').replace(' ', '')
             if section not in result:
                 result[section] = {}
             if name not in result[section]:
@@ -94,8 +95,8 @@ class FiberStatusProbe(Probe):
             match_group = match.groupdict()
             group_keys = match_group.keys()
             if len(group_keys) == 2 and 'name' in group_keys and 'value' in group_keys:
-                result[section][name] = match.group('value').strip().replace('&nbsp;', '')
+                result[section][name] = match.group('value').strip().replace('&nbsp;', '').replace(' nm', '')
             else:
                 for x in match.groupdict().keys():
-                    result[section][name][x] = match.group(x).strip().replace('&nbsp;', '')
+                    result[section][name][x] = match.group(x).strip().replace('&nbsp;', '').replace(' nm', '')
         return result

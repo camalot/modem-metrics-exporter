@@ -1,0 +1,85 @@
+{
+  "name": "Netprobe Dev Container",
+  "image": "mcr.microsoft.com/vscode/devcontainers/base:0-focal",
+  "runArgs": [
+    "--privileged",
+    "--network=host"
+  ],
+  "containerEnv": {
+    // Attempt to load the environment from the local machine
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "DavidAnson.vscode-markdownlint",
+        "EditorConfig.EditorConfig",
+        "GitHub.vscode-github-actions",
+        "mads-hartmann.bash-ide-vscode",
+        "mkhl.shfmt",
+        "ms-azuretools.vscode-docker",
+        "ms-vscode.makefile-tools",
+        "timonwong.shellcheck",
+        "mikestead.dotenv",
+        "bierner.github-markdown-preview"
+      ],
+      "settings": {
+        "terminal.integrated.shell.linux": "/bin/zsh",
+        "terminal.integrated.shell.windows": "C:\\Windows\\System32\\wsl.exe",
+        "terminal.integrated.shellArgs.windows": [
+          "-d",
+          "Ubuntu-20.04",
+          "-e",
+          "zsh"
+        ],
+        "terminal.integrated.env.linux": {
+          "DEBIAN_FRONTEND": "noninteractive"
+        },
+        "terminal.integrated.env.windows": {
+          "WSLENV": "DEBIAN_FRONTEND/u:USERNAME"
+        },
+        "files.exclude": {
+          "**/.git": true,
+          "**/.svn": true,
+          "**/.hg": true,
+          "**/CVS": true,
+          "**/.DS_Store": true
+        },
+        "files.watcherExclude": {
+          "**/.git/objects/**": true,
+          "**/.git/subtree-cache/**": true,
+          "**/node_modules/*/**": true,
+          "**/bin/**": true,
+          "**/obj/**": true,
+          "**/out/**": true,
+          "**/dist/**": true,
+          "**/build/**": true,
+          "**/target/**": true,
+          "**/.DS_Store": true
+        },
+        "files.defaultLanguage": "yaml",
+        "files.trimTrailingWhitespace": true,
+        "files.insertFinalNewline": true,
+        "files.trimFinalNewlines": true,
+        "files.autoSave": "afterDelay",
+        "files.autoSaveDelay": 1000,
+        "files.encoding": "utf8",
+        "files.eol": "\n",
+        "files.useExperimentalFileWatcher": true
+      }
+    }
+  },
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached",
+  "workspaceFolder": "/workspace",
+  "mounts": [
+    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.kube,target=/home/vscode/.kube,type=bind,consistency=cached",
+    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.krew,target=/home/vscode/.krew,type=bind,consistency=cached",
+    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.ssh,target=/home/vscode/.ssh,type=bind,consistency=cached",
+    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.aws,target=/home/vscode/.aws,type=bind,consistency=cached",
+    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.azure,target=/home/vscode/.azure,type=bind,consistency=cached",
+    "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind,consistency=cached",
+    // if this doesnt exist locally, it creates it as a folder...
+    // to combat this, a default is loaded into the container
+    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.gitconfig,target=/home/vscode/.gitconfig,type=bind,consistency=cached",
+    "source=${localWorkspaceFolder}/.devcontainer/mount,target=/home/vscode/.devcontainer,type=bind,consistency=cached"
+  ]
+}

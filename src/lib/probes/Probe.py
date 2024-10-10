@@ -29,7 +29,7 @@ class Probe:
 
     def parse(self, response) -> dict:
         raise NotImplementedError("You must implement the parse method")
-    
+
 
     def run(self):
         if not self.enabled:
@@ -38,7 +38,7 @@ class Probe:
         self.logger.debug(f"Running {self.name}")
         while self._run_loop:
             result = {}
-            url = f"http://192.168.1.254{self.endpoint}"
+            url = f"{self.config.modem.scheme}://{self.config.modem.host}:{self.config.modem.port}{self.endpoint}"
             self.logger.debug(f"Fetching {self.name} data from {url}")
             response = requests.get(url)
             self.logger.debug(f"Response: {response.status_code}")

@@ -4,6 +4,8 @@ import typing
 import yaml
 from config.DataStoreConfiguration import DataStoreConfiguration
 from config.LoggingConfiguration import LoggingConfiguration
+from config.ModemConfiguration import ModemConfiguration
+from config.PresentationConfiguration import PresentationConfiguration
 from dotenv import find_dotenv, load_dotenv
 from lib.enums.ConfigurationDefaults import ConfigurationDefaults
 from lib.enums.EnvVars import EnvVars
@@ -37,3 +39,5 @@ class Configuration:
 
         self.logging = LoggingConfiguration(base_config)
         self.datastore = DataStoreConfiguration(base_config)
+        self.presentation = PresentationConfiguration(base_config)
+        self.modem = ModemConfiguration(base_config)

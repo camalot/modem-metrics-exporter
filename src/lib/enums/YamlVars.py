@@ -32,14 +32,27 @@ class YamlVars(Enum):
     LOG_FORMAT = "$.logging.format"
     LOG_DATE_FORMAT = "$.logging.date_format"
 
+    MODEM_HOST = "$.modem.host"
+    MODEM_USERNAME = "$.modem.username"
+    MODEM_PASSWORD = "$.modem.password"
+    MODEM_PORT = "$.modem.port"
+    MODEM_SCHEME = "$.modem.scheme"
+    MODEM_TYPE = "$.modem.type"
+    MODEM_COLLECTORS = "$.modem.collectors"
+    MODEM_PROBES = "$.modem.probes"
+
+    MONGODB_URL = "$.datastore.mongodb.url"
+    MONGODB_DB = "$.datastore.mongodb.db"
+    MONGODB_COLLECTION = "$.datastore.mongodb.collection"
+
     MQTT_HOST = "$.datastore.mqtt.host"
     MQTT_PORT = "$.datastore.mqtt.port"
     MQTT_USERNAME = "$.datastore.mqtt.username"
     MQTT_PASSWORD = "$.datastore.mqtt.password"
 
-    MONGODB_URL = "$.datastore.mongodb.url"
-    MONGODB_DB = "$.datastore.mongodb.db"
-    MONGODB_COLLECTION = "$.datastore.mongodb.collection"
+    PRESENTATION_PORT = "$.presentation.port"
+    PRESENTATION_INTERFACE = "$.presentation.interface"
+    PRESENTATION_NAMESPACE = "$.presentation.namespace"
 
     REDIS_HOST = "$.datastore.redis.host"
     REDIS_PORT = "$.datastore.redis.port"

@@ -14,6 +14,7 @@ class BroadbandStatisticsProbe(Probe):
         self.topic = 'modemprobe/broadbandstats'
         self.endpoint = '/cgi-bin/broadbandstatistics.ha'
         self.stats_pattern = r'<th[^>]*>(?P<name>.*?)(?:&nbsp;)*?\s*<\/th>\s*?<td[^>]*>\s*?(?P<value>.*?)\s*?<\/td>'
+        self.help_pattern = r'<strong>(?P<property>.*?):</strong>\s*(?P<help>.*?)<br\s*/><br\s*/>'
         self.groups = [
             {
                 'name': 'broadband',
@@ -52,20 +53,32 @@ class BroadbandStatisticsProbe(Probe):
         for group in self.groups:
             matches = re.finditer(group['pattern'], response, re.IGNORECASE | re.DOTALL)
             for _, match in enumerate(matches):
-                section = group.get('name')
+                section = group.get('name', 'unknown').lower().strip().replace('&nbsp;', '').replace(' ', '')
                 stats = match.group('stats')
                 if section not in result:
                     result[section] = {}
                 stats_result = self.parse_stats(section, stats, self.stats_pattern)
                 if stats_result:
-                    result[section] = stats_result
+                    result.update(stats_result)
+
+        # get all help text
+        matches = re.finditer(self.help_pattern, response, re.IGNORECASE | re.MULTILINE)
+        if 'metadata' not in result:
+            result['metadata'] = {}
+        if 'help' not in result:
+            result['metadata']['help'] = {}
+        for _, match in enumerate(matches):
+            property = match.group('property')
+            help = match.group('help')
+            result['metadata']['help'][property.replace(' ', '').lower()] = help
+
         return result
 
     def parse_stats(self, section, stats, pattern) -> dict:
         result = {}
         matches = re.finditer(pattern, stats, re.IGNORECASE | re.MULTILINE)
         for _, match in enumerate(matches):
-            name = match.group('name')
+            name = match.group('name').lower().strip().replace('&nbsp;', '').replace(' ', '')
             value = match.group('value')
             if section not in result:
                 result[section] = {}

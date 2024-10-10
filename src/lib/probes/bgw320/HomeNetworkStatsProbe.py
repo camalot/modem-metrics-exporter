@@ -66,7 +66,7 @@ class HomeNetworkStatsProbe(Probe):
         for group in self.groups:
             matches = re.finditer(group['pattern'], response, re.IGNORECASE | re.DOTALL)
             for _, match in enumerate(matches):
-                section = group.get('name', 'unknown').strip().replace('&nbsp;', '')
+                section = group.get('name', 'unknown').lower().strip().replace('&nbsp;', '').replace(' ', '')
                 stats = match.group('stats')
                 if section not in result:
                     result[section] = {}
@@ -74,7 +74,7 @@ class HomeNetworkStatsProbe(Probe):
                     result[section]['value'] = match.group('value')
                 stats_result = self.parse_stats(section, stats, group['stats'], options=group['options'])
                 if stats_result:
-                    result[section].update(stats_result)
+                    result.update(stats_result)
         # get all help text
         matches = re.finditer(self.help_pattern, response, re.IGNORECASE | re.MULTILINE)
         if 'metadata' not in result:
@@ -84,14 +84,15 @@ class HomeNetworkStatsProbe(Probe):
         for _, match in enumerate(matches):
             property = match.group('property')
             help = match.group('help')
-            result['metadata']['help'][property] = help
+            result['metadata']['help'][property.replace(' ', '').lower()] = help
+
         return result
 
     def parse_stats(self, section, stats, pattern, **kwargs) -> dict:
         result = {}
         matches = re.finditer(pattern, stats, kwargs['options'])
         for _, match in enumerate(matches):
-            name = match.group('name').strip().replace('&nbsp;', '')
+            name = match.group('name').lower().strip().replace('&nbsp;', '').replace(' ', '')
 
             if section not in result:
                 result[section] = {}

@@ -23,9 +23,20 @@ class ConfigurationDefaults:
     LOG_FORMAT = "%(asctime)s [%(levelname)s] [%(name)s] %(message)s"
     LOG_DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 
+    MODEM_HOST = "192.168.2.254"
+    MODEM_USERNAME = ""
+    MODEM_PASSWORD = ""
+    MODEM_PORT = 80
+    MODEM_SCHEME = "http"
+    MODEM_TYPE = "bgw320"
+
     MONGODB_URL = "mongodb://localhost:27017/admin"
-    MONGODB_DB = "netprobe"
-    MONGODB_COLLECTION = "netprobe"
+    MONGODB_DB = "modemprobe"
+    MONGODB_COLLECTION = "modemprobe"
+
+    PRESENTATION_NAMESPACE = "modemprobe"
+    PRESENTATION_PORT = 5000
+    PRESENTATION_INTERFACE = "0.0.0.0"
 
     MQTT_HOST = "localhost"
     MQTT_PORT = 1883

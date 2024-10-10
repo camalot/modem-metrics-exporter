@@ -54,7 +54,7 @@ class BroadbandStatisticsProbe(Probe):
         for group in self.groups:
             matches = re.finditer(group['pattern'], response, re.IGNORECASE | re.DOTALL)
             for _, match in enumerate(matches):
-                section = group.get('name', 'unknown').lower().strip().replace('&nbsp;', '').replace(' ', '')
+                section = group.get('name', 'unknown').lower().strip().replace('&nbsp;', '').replace(' ', '').replace('(mbps)', '')
                 stats = match.group('stats')
                 if section not in result:
                     result[section] = {}
@@ -79,7 +79,7 @@ class BroadbandStatisticsProbe(Probe):
         result = {}
         matches = re.finditer(pattern, stats, re.IGNORECASE | re.MULTILINE)
         for _, match in enumerate(matches):
-            name = match.group('name').lower().strip().replace('&nbsp;', '').replace(' ', '')
+            name = match.group('name').lower().strip().replace('&nbsp;', '').replace(' ', '').replace('(mbps)', '')
             value = match.group('value')
             if section not in result:
                 result[section] = {}

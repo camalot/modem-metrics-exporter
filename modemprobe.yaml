@@ -1,0 +1,32 @@
+---
+logging:
+  level: INFO
+  format: '%(asctime)s [%(levelname)s] [%(name)s] %(message)s'
+  date_format: '%Y-%m-%d %H:%M:%S'
+
+modem:
+  ip: 192.168.1.254
+  scheme: http
+  port: 80
+  access_code: 123456
+  type: bgw320
+
+  probes:
+    - name: SystemInfoProbe
+      enabled: true
+      interval: 60
+      endpoint: cgi-bin/sysinfo.ha
+      pattern: |
+        <th[^>]*>(?P<name>.*?)\s*<\/th>\s*?<td[^>]*>\s*?(?P<value>.*?)\s*?<\/td>
+    - name: BroadbandStatisticsProbe
+      enabled: true
+      interval: 60
+      endpoint: cgi-bin/broadbandstatistics.ha
+      groups:
+        - name: broadband
+          pattern: |
+            <div.*?><h2>(?P<section>Primary\s+Broadband)</h2></div>\s*?<div>\s*(?P<stats>.*?)</table>\s*</div>
+          stats: |
+            <th[^>]*>(?P<name>.*?)\s*<\/th>\s*?<td[^>]*>\s*?(?P<value>.*?)\s*?<\/td>
+      pattern: |
+        <th[^>]*>(?P<name>.*?)\s*<\/th>\s*?<td[^>]*>\s*?(?P<value>.*?)\s*?<\/td>

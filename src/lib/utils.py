@@ -16,9 +16,13 @@ def to_int_from_boolean(value: bool) -> int:
 
 def datetime_to_epoch(value: typing.Optional[datetime]) -> float:
     if not value:
-        print('datetime_to_epoch: value is None')
         return 0.0
     return float((value - datetime(1970, 1, 1)).total_seconds())
+
+def diff_now(value: typing.Optional[datetime]) -> float:
+    if not value:
+        return 0.0
+    return float((datetime.now() - value).total_seconds())
 
 def is_timedelta(value: str, fmt: str = "") -> bool:
     if ':' not in value:

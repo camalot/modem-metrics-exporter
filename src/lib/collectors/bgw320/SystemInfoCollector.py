@@ -40,14 +40,13 @@ class SystemInfoCollector(Collector):
 
             value = data[key]
             if utils.is_datetime(value, '%Y/%m/%d %H:%M:%S'):
-                value = utils.datetime_to_epoch(utils.to_datetime(value, '%Y/%m/%d %H:%M:%S'))
+                value = utils.diff_now(utils.to_datetime(value, '%Y/%m/%d %H:%M:%S'))
                 g = GaugeMetricFamily(
                     name=self.metric_safe_name(key),
                     documentation=help,
                     labels=['model', 'host'],
                 )
                 g.add_metric([self.config.modem.type, self.config.modem.host], value)
-                print('epoch value')
                 metrics.append(g)
             elif utils.is_timedelta(value):
                 value = utils.to_timedelta(value)

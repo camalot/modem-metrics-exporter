@@ -3,6 +3,8 @@ import re
 import requests
 
 from lib.probes.Probe import Probe
+import lib.utils as utils
+
 
 class SystemInfoProbe(Probe):
     def __init__(self):
@@ -22,7 +24,7 @@ class SystemInfoProbe(Probe):
         result = {}
         matches = re.finditer(self.pattern, response, re.IGNORECASE | re.MULTILINE)
         for _, match in enumerate(matches):
-            name = match.group('name').lower().strip().replace('&nbsp;', '').replace(' ', '')
+            name = utils.clean_name_string(match.group('name'))
             value = match.group('value')
             result[name] = value
 
@@ -35,6 +37,6 @@ class SystemInfoProbe(Probe):
         for _, match in enumerate(matches):
             property = match.group('property')
             help = match.group('help')
-            result['metadata']['help'][property.replace(' ', '').lower()] = help
+            result['metadata']['help'][utils.clean_name_string(property)] = help
 
         return result

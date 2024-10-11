@@ -1,10 +1,14 @@
 import typing
 from datetime import datetime, timedelta
 def is_booleanable(value: str) -> bool:
-    return value.lower() in ('disabled', 'enabled', 'down', 'up', 'unavailable', 'available', 'off', 'on')
+    if value:
+        return value.lower() in ('disabled', 'enabled', 'down', 'up', 'unavailable', 'available', 'off', 'on')
+    return False
 
 def to_boolean(value: str) -> bool:
-    return bool(value.lower() in ('true', '1', 't', 'y', 'yes', 'enabled', 'up', 'available', 'on'))
+    if value:
+        return bool(value.lower() in ('true', '1', 't', 'y', 'yes', 'enabled', 'up', 'available', 'on'))
+    return False
 
 def to_int_from_boolean(value: bool) -> int:
     return 1 if value else 0
@@ -84,3 +88,23 @@ def to_datetime(value: str, fmt: str = '%Y-%m-%d %H:%M:%S') -> typing.Optional[d
     except ValueError:
         print(f'to_datetime: value {value} is not a valid datetime')
         return None
+
+def is_string_list(value: str, separator: str = ',') -> bool:
+    if not value:
+        return False
+    try:
+        return value.index(separator) > -1
+    except ValueError:
+        return False
+
+def to_string_list(value: str, separator: str = ',') -> typing.List[str]:
+    if not value:
+        return []
+    return value.split(separator)
+
+
+def clean_name_string(value: str) -> str:
+    return clean_string(value.replace(' ', '').replace('-', '')).lower()
+
+def clean_string(value: str) -> str:
+    return value.strip().replace('&nbsp;', '').replace('(mbps)', '').replace('(ssid)', '').replace(' nm', '').replace('(', '').replace(')', '')

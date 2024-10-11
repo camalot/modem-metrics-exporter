@@ -3,7 +3,7 @@ import re
 import requests
 
 from lib.probes.Probe import Probe
-
+import lib.utils as utils
 
 class HomeNetworkStatsProbe(Probe):
     def __init__(self):
@@ -66,7 +66,7 @@ class HomeNetworkStatsProbe(Probe):
         for group in self.groups:
             matches = re.finditer(group['pattern'], response, re.IGNORECASE | re.DOTALL)
             for _, match in enumerate(matches):
-                section = group.get('name', 'unknown').lower().strip().replace('&nbsp;', '').replace(' ', '')
+                section = utils.clean_name_string(group.get('name', 'unknown'))
                 stats = match.group('stats')
                 if section not in result:
                     result[section] = {}
@@ -84,7 +84,7 @@ class HomeNetworkStatsProbe(Probe):
         for _, match in enumerate(matches):
             property = match.group('property')
             help = match.group('help')
-            result['metadata']['help'][property.replace(' ', '').lower()] = help
+            result['metadata']['help'][utils.clean_name_string(property)] = help
 
         return result
 
@@ -92,7 +92,7 @@ class HomeNetworkStatsProbe(Probe):
         result = {}
         matches = re.finditer(pattern, stats, kwargs['options'])
         for _, match in enumerate(matches):
-            name = match.group('name').lower().strip().replace('&nbsp;', '').replace(' ', '')
+            name = utils.clean_name_string(match.group('name'))
 
             if section not in result:
                 result[section] = {}
@@ -102,12 +102,12 @@ class HomeNetworkStatsProbe(Probe):
             match_group = match.groupdict()
             group_keys = match_group.keys()
             if len(group_keys) == 2 and 'name' in group_keys and 'value' in group_keys:
-                result[section][name] = match.group('value').strip().replace('&nbsp;', '')
+                result[section][name] = utils.clean_string(match.group('value'))
             else:
                 for x in match.groupdict().keys():
                     mval = match.group(x)
                     if mval:
-                        result[section][name][x] = match.group(x).strip().replace('&nbsp;', '')
+                        result[section][name][x] = utils.clean_string(match.group(x))
                     else:
                         result[section][name][x] = None
         return result

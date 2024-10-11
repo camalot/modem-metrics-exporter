@@ -12,13 +12,12 @@ from prometheus_client.core import GaugeMetricFamily
 
 
 class FiberStatusCollector(Collector):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, modem):
+        super().__init__(modem)
         self.subspace = self.safe_name('device')
 
     def collect(self) -> typing.List[Metric]:
         try:
-            print("FiberStatusCollector Collect")
             # get datastore
             datastore = DatastoreFactory().create(DataStoreTypes.from_str(self._config.datastore))
             # get data
@@ -28,9 +27,9 @@ class FiberStatusCollector(Collector):
             g = GaugeMetricFamily(
                 name=self.metric_root_safe_name('collector'),
                 documentation='Indicates if the collector was initiated',
-                labels=['type'],
+                labels=['type', 'model', 'host', 'modem'],
             )
-            g.add_metric([self.__class__.__name__], 1)
+            g.add_metric([self.__class__.__name__, self.modem.type, self.modem.host, self.modem.name], 1)
             metrics.append(g)
 
             if data is None:
@@ -48,10 +47,10 @@ class FiberStatusCollector(Collector):
                 g = GaugeMetricFamily(
                     name=self.metric_safe_name(section),
                     documentation=help,
-                    labels=['model', 'host'],
+                    labels=['model', 'host', 'modem'],
                 )
                 g.add_metric(
-                    [self.config.modem.type, self.config.modem.host],
+                    [self.modem.type, self.modem.host, self.modem.name],
                     float(section_data.get('value', '0')),
                 )
                 metrics.append(g)
@@ -59,14 +58,14 @@ class FiberStatusCollector(Collector):
                 g = GaugeMetricFamily(
                     name=self.metric_safe_name(f'threshold'),
                     documentation='',
-                    labels=['model', 'host', 'threshold', 'type', 'sensor'],
+                    labels=['model', 'host', 'modem', 'threshold', 'type', 'sensor'],
                 )
 
                 for level in ['alarm', 'warning']:
                     group = section_data.get(level, {})
                     for key in ['high', 'low']:
                         g.add_metric(
-                            [self.config.modem.type, self.config.modem.host, key, level, section],
+                            [self.modem.type, self.modem.host, self.modem.name, key, level, section],
                             float(group.get(f'{key}T', '0')),
                         )
                 metrics.append(g)
@@ -79,10 +78,10 @@ class FiberStatusCollector(Collector):
                     g = GaugeMetricFamily(
                         name=self.metric_safe_name(f'{key}'),
                         documentation=help,
-                        labels=['model', 'host'],
+                        labels=['model', 'host', 'modem'],
                     )
                     g.add_metric(
-                        [self.config.modem.type, self.config.modem.host],
+                        [self.modem.type, self.modem.host, self.modem.name],
                         float(value),
                     )
                     metrics.append(g)
@@ -90,10 +89,10 @@ class FiberStatusCollector(Collector):
                     g = GaugeMetricFamily(
                         name=self.metric_safe_name(f'{key}'),
                         documentation=help,
-                        labels=['model', 'host'],
+                        labels=['model', 'host', 'modem'],
                     )
                     g.add_metric(
-                        [self.config.modem.type, self.config.modem.host],
+                        [self.modem.type, self.modem.host, self.modem.name],
                         utils.to_boolean(value),
                     )
                     metrics.append(g)
@@ -101,10 +100,10 @@ class FiberStatusCollector(Collector):
                     g = InfoMetricFamily(
                         name=self.metric_safe_name(key),
                         documentation=help,
-                        labels=['model', 'host'],
+                        labels=['model', 'host', 'modem'],
                     )
                     g.add_metric(
-                        [self.config.modem.type, self.config.modem.host],
+                        [self.modem.type, self.modem.host, self.modem.name],
                         {key: fiber[key]},
                     )
                     metrics.append(g)

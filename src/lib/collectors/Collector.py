@@ -4,16 +4,16 @@ from lib.logging import setup_logging
 from prometheus_client.core import Metric
 from config import ApplicationConfiguration
 class Collector:
-    def __init__(self):
+    def __init__(self, modem):
         self.config = ApplicationConfiguration
         self.namespace = self.config.presentation.namespace
         self.subspace = ''
         self.logger = setup_logging(self.__class__.__name__, self.config.logging)
-
+        self.modem = modem
         # find the config for this collector
-        for cc in self.config.modem.collectors:
+        for cc in self.modem.collectors:
             if cc.type == self.__class__.__name__:
-                print(f'Found config for {self.__class__.__name__}')
+                # self.logger.debug(f'Found config for {self.__class__.__name__}')
                 self._config = cc
                 break
 

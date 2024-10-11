@@ -91,7 +91,6 @@ def to_datetime(value: str, fmt: str = '%Y-%m-%d %H:%M:%S') -> typing.Optional[d
     try:
         return datetime.strptime(value, fmt)
     except ValueError:
-        print(f'to_datetime: value {value} is not a valid datetime')
         return None
 
 def to_epoch(value: str, fmt: str = '%Y-%m-%d %H:%M:%S') -> float:

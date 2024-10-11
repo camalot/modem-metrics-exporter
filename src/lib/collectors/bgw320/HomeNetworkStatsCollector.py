@@ -7,9 +7,9 @@ from lib.datastores.factory import DatastoreFactory
 from lib.collectors.Collector import Collector
 import lib.utils as utils
 
-class HomeNetworkCollector(Collector):
-    def __init__(self):
-        super().__init__()
+class HomeNetworkStatsCollector(Collector):
+    def __init__(self, modem):
+        super().__init__(modem)
         self.subspace = self.safe_name('lan')
 
 
@@ -23,9 +23,9 @@ class HomeNetworkCollector(Collector):
         g = GaugeMetricFamily(
             name=self.metric_root_safe_name('collector'),
             documentation='Indicates if the collector was initiated',
-            labels=['type'],
+            labels=['type', 'model', 'host', 'modem'],
         )
-        g.add_metric([self.__class__.__name__], 1)
+        g.add_metric([self.__class__.__name__, self.modem.type, self.modem.host, self.modem.name], 1)
         metrics.append(g)
         if data is None:
             return metrics
@@ -59,21 +59,21 @@ class HomeNetworkCollector(Collector):
             g = GaugeMetricFamily(
                 name=self.metric_safe_name(f'{section}_{group}'),
                 documentation=self.get_help(name, metadata),
-                labels=['model', 'host', 'name'],
+                labels=['model', 'host', 'modem', 'name'],
             )
             value = data[group]
             if utils.is_booleanable(value):
                 value_bool = utils.to_boolean(value)
-                g.add_metric([self.config.modem.type, self.config.modem.host, name], 1 if value_bool else 0)
+                g.add_metric([self.modem.type, self.modem.host, self.modem.name, name], 1 if value_bool else 0)
             elif value.isnumeric():
-                g.add_metric([self.config.modem.type, self.config.modem.host, name], float(value))
+                g.add_metric([self.modem.type, self.modem.host, self.modem.name,name], float(value))
             else:
                 g = InfoMetricFamily(
                     name=self.metric_safe_name(f'{section}'),
                     documentation=self.get_help(name, metadata),
-                    labels=['model', 'host'],
+                    labels=['model', 'host', 'modem', 'name'],
                 )
-                g.add_metric([self.config.modem.type, self.config.modem.host, name], {'key': group, 'value': value})
+                g.add_metric([self.modem.type, self.modem.host, self.modem.name, name], {'key': group, 'value': value})
             metrics.append(g)
         return metrics
 
@@ -92,14 +92,16 @@ class HomeNetworkCollector(Collector):
                 g = GaugeMetricFamily(
                     name=self.metric_safe_name(f'{name}'),
                     documentation=self.get_help('lan', metadata),
-                    labels=['model', 'host', 'name', 'port'],
+                    labels=['model', 'host', 'modem', 'name', 'port'],
                 )
                 value = data[section][port]
                 if utils.is_booleanable(value):
                     value_bool = utils.to_boolean(value)
-                    g.add_metric([self.config.modem.type, self.config.modem.host, name, lookup[port]], 1 if value_bool else 0)
+                    g.add_metric(
+                        [self.modem.type, self.modem.host, self.modem.name, name, lookup[port]], 1 if value_bool else 0
+                    )
                 else:
-                    g.add_metric([self.config.modem.type, self.config.modem.host, name, lookup[port]], float(value))
+                    g.add_metric([self.modem.type, self.modem.host, self.modem.name, name, lookup[port]], float(value))
                 metrics.append(g)
         return metrics
 
@@ -122,21 +124,23 @@ class HomeNetworkCollector(Collector):
                     g = GaugeMetricFamily(
                         name=self.metric_safe_name(f'{section}_{group}'),
                         documentation=self.get_help(name, metadata),
-                        labels=['model', 'host', 'name', 'frequency'],
+                        labels=['model', 'host', 'modem', 'name', 'frequency'],
                     )
 
                     value_bool = utils.to_boolean(value)
-                    g.add_metric([self.config.modem.type, self.config.modem.host, name, lookup[f]], 1 if value_bool else 0)
+                    g.add_metric(
+                        [self.modem.type, self.modem.host, self.modem.name, name, lookup[f]], 1 if value_bool else 0
+                    )
                     metrics.append(g)
                 elif utils.is_string_list(value, '/'):
                     i = InfoMetricFamily(
                         name=self.metric_safe_name(f'{section}_{group}'),
                         documentation=self.get_help(name, metadata),
-                        labels=['model', 'host', 'name', 'frequency'],
+                        labels=['model', 'host', 'modem', 'name', 'frequency'],
                     )
-                    i.add_metric([self.config.modem.type, self.config.modem.host, name, lookup[f]], {group: value})
+                    i.add_metric([self.modem.type, self.modem.host, self.modem.name, name, lookup[f]], {group: value})
                     for v in utils.to_string_list(value, '/'):
-                        i.add_metric([self.config.modem.type, self.config.modem.host, name, lookup[f]], {group: v})
+                        i.add_metric([self.modem.type, self.modem.host, self.modem.name, name, lookup[f]], {group: v})
                     metrics.append(i)
                 elif utils.is_string_list(value, ','):
                     for v in utils.to_string_list(value):
@@ -144,33 +148,33 @@ class HomeNetworkCollector(Collector):
                             g = GaugeMetricFamily(
                                 name=self.metric_safe_name(f'{section}_{group}'),
                                 documentation=self.get_help(name, metadata),
-                                labels=['model', 'host', 'name', 'frequency'],
+                                labels=['model', 'host', 'modem', 'name', 'frequency'],
                             )
-                            g.add_metric([self.config.modem.type, self.config.modem.host, name, lookup[f]], float(v))
+                            g.add_metric([self.modem.type, self.modem.host, self.modem.name, name, lookup[f]], float(v))
                             metrics.append(g)
                         else:
                             i = InfoMetricFamily(
                                 name=self.metric_safe_name(f'{section}_{group}'),
                                 documentation=self.get_help(name, metadata),
-                                labels=['model', 'host', 'name', 'frequency'],
+                                labels=['model', 'host', 'modem', 'name', 'frequency'],
                             )
-                            i.add_metric([self.config.modem.type, self.config.modem.host, name, lookup[f]], {group: v})
+                            i.add_metric([self.modem.type, self.modem.host, self.modem.name, name, lookup[f]], {group: v})
                             metrics.append(i)
                 elif value.isnumeric():
                     g = GaugeMetricFamily(
                         name=self.metric_safe_name(f'{section}_{group}'),
                         documentation=self.get_help(name, metadata),
-                        labels=['model', 'host', 'name', 'frequency'],
+                        labels=['model', 'host', 'modem', 'name', 'frequency'],
                     )
-                    g.add_metric([self.config.modem.type, self.config.modem.host, name, lookup[f]], float(value))
+                    g.add_metric([self.modem.type, self.modem.host, self.modem.name, name, lookup[f]], float(value))
                     metrics.append(g)
                 else:
                     i = InfoMetricFamily(
                         name=self.metric_safe_name(f'{section}_{group}'),
                         documentation=self.get_help(name, metadata),
-                        labels=['model', 'host', 'name', 'frequency'],
+                        labels=['model', 'host', 'modem', 'name', 'frequency'],
                     )
-                    i.add_metric([self.config.modem.type, self.config.modem.host, name, lookup[f]], {group: value})
+                    i.add_metric([self.modem.type, self.modem.host, self.modem.name, name, lookup[f]], {group: value})
                     metrics.append(i)
         return metrics
 
@@ -183,10 +187,10 @@ class HomeNetworkCollector(Collector):
                 g = GaugeMetricFamily(
                     name=self.metric_safe_name(f'interface'),
                     documentation=self.get_help('interfaces', metadata),
-                    labels=['model', 'host', 'interface', 'status', 'mode'],
+                    labels=['model', 'host', 'modem', 'interface', 'status', 'mode'],
                 )
                 g.add_metric(
-                    [self.config.modem.type, self.config.modem.host, interface['name'], interface['status'], x],
+                    [self.modem.type, self.modem.host, self.modem.name, interface['name'], interface['status'], x],
                     interface[x],
                 )
                 metrics.append(g)

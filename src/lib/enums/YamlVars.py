@@ -32,14 +32,16 @@ class YamlVars(Enum):
     LOG_FORMAT = "$.logging.format"
     LOG_DATE_FORMAT = "$.logging.date_format"
 
-    MODEM_HOST = "$.modem.host"
-    MODEM_USERNAME = "$.modem.username"
-    MODEM_PASSWORD = "$.modem.password"
-    MODEM_PORT = "$.modem.port"
-    MODEM_SCHEME = "$.modem.scheme"
-    MODEM_TYPE = "$.modem.type"
-    MODEM_COLLECTORS = "$.modem.collectors"
-    MODEM_PROBES = "$.modem.probes"
+    MODEMS = "$.modems"
+    MODEM_NAME = "$.name"
+    MODEM_HOST = "$.host"
+    MODEM_USERNAME = "$.username"
+    MODEM_PASSWORD = "$.password"
+    MODEM_PORT = "$.port"
+    MODEM_SCHEME = "$.scheme"
+    MODEM_TYPE = "$.type"
+    MODEM_COLLECTORS = "$.collectors"
+    MODEM_PROBES = "$.probes"
 
     MONGODB_URL = "$.datastore.mongodb.url"
     MONGODB_DB = "$.datastore.mongodb.db"
@@ -68,11 +70,9 @@ class YamlVars(Enum):
             expression = YamlVars.__engine__(self.value)
             result = expression.evaluate(data=data)  # type: ignore
             if result is None:
-                # print(f"Could not find value for {self.value}, using default value {default}")
                 return default
             return result
         except KeyError:
-            # print(f"Could not find value for {self.value}, using default value {default}")
             return default
 
     def nullable(self, data: dict, default: typing.Optional[typing.Any]) -> typing.Optional[typing.Any]:

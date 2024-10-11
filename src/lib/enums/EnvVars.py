@@ -33,13 +33,6 @@ class EnvVars(Enum):
     LOG_FORMAT = "MP_LOG_FORMAT"
     LOG_DATE_FORMAT = "MP_LOG_DATE_FORMAT"
 
-    MODEM_HOST = "MP_MODEM_HOST"
-    MODEM_USERNAME = "MP_MODEM_USERNAME"
-    MODEM_PASSWORD = "MP_MODEM_PASSWORD"
-    MODEM_PORT = "MP_MODEM_PORT"
-    MODEM_SCHEME = "MP_MODEM_SCHEME"
-    MODEM_TYPE = "MP_MODEM_TYPE"
-
     MQTT_HOST = "MP_MQTT_HOST"
     MQTT_PORT = "MP_MQTT_PORT"
     MQTT_USERNAME = "MP_MQTT_USERNAME"
@@ -60,7 +53,7 @@ class EnvVars(Enum):
 
     def expand(self, default: typing.Any = None) -> str:
         result = EnvVars.unquote(os.getenv(self.value, default))
-        return result
+        return result if result else default
 
     def boolean(self, default: bool) -> bool:
         return bool(self.expand(str(default)).lower() in ('true', '1', 't', 'y', 'yes'))

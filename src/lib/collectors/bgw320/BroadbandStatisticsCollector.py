@@ -8,8 +8,8 @@ from lib.collectors.Collector import Collector
 import lib.utils as utils
 
 class BroadbandStatisticsCollector(Collector):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, modem):
+        super().__init__(modem)
         self.subspace = self.safe_name('broadband')
 
     def collect(self) -> typing.List[Metric]:
@@ -22,9 +22,9 @@ class BroadbandStatisticsCollector(Collector):
         g = GaugeMetricFamily(
             name=self.metric_root_safe_name('collector'),
             documentation='Indicates if the collector was initiated',
-            labels=['type'],
+            labels=['type', 'model', 'host', 'modem'],
         )
-        g.add_metric([self.__class__.__name__], 1)
+        g.add_metric([self.__class__.__name__, self.modem.type, self.modem.host, self.modem.name], 1)
         metrics.append(g)
         if data is None:
             return metrics
@@ -44,9 +44,9 @@ class BroadbandStatisticsCollector(Collector):
                     g = GaugeMetricFamily(
                         name=self.metric_safe_name(key),
                         documentation=help,
-                        labels=['model', 'host'],
+                        labels=['model', 'host', 'modem'],
                     )
-                    g.add_metric([self.config.modem.type, self.config.modem.host], value)
+                    g.add_metric([self.modem.type, self.modem.host, self.modem.name], value)
                     metrics.append(g)
                 elif value.isnumeric():
                     value = float(value)
@@ -54,9 +54,9 @@ class BroadbandStatisticsCollector(Collector):
                     g = GaugeMetricFamily(
                         name=self.metric_safe_name(f'{section}_{key}'),
                         documentation=help,
-                        labels=['model', 'host'],
+                        labels=['model', 'host', 'modem'],
                     )
-                    g.add_metric([self.config.modem.type, self.config.modem.host], value)
+                    g.add_metric([self.modem.type, self.modem.host, self.modem.name], value)
                     metrics.append(g)
         return metrics
 

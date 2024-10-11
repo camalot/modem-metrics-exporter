@@ -8,8 +8,8 @@ from lib.collectors.Collector import Collector
 import lib.utils as utils
 
 class SystemInfoCollector(Collector):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, modem):
+        super().__init__(modem)
         self.subspace = self.safe_name('system')
 
     def collect(self) -> typing.List[Metric]:
@@ -22,9 +22,9 @@ class SystemInfoCollector(Collector):
         g = GaugeMetricFamily(
             name=self.metric_root_safe_name('collector'),
             documentation='Indicates if the collector was initiated',
-            labels=['type'],
+            labels=['type', 'model', 'host', 'modem'],
         )
-        g.add_metric([self.__class__.__name__], 1)
+        g.add_metric([self.__class__.__name__, self.modem.type, self.modem.host, self.modem.name], 1)
         metrics.append(g)
 
         if data is None:
@@ -44,29 +44,28 @@ class SystemInfoCollector(Collector):
                 g = GaugeMetricFamily(
                     name=self.metric_safe_name(key),
                     documentation=help,
-                    labels=['model', 'host'],
+                    labels=['model', 'host', 'modem'],
                 )
-                g.add_metric([self.config.modem.type, self.config.modem.host], value)
+                g.add_metric([self.modem.type, self.modem.host, self.modem.name], value)
                 metrics.append(g)
             elif utils.is_timedelta(value):
                 value = utils.to_timedelta(value)
                 g = GaugeMetricFamily(
                     name=self.metric_safe_name(key),
                     documentation=help,
-                    labels=['model', 'host'],
+                    labels=['model', 'host', 'modem'],
                 )
-                g.add_metric([self.config.modem.type, self.config.modem.host], value.total_seconds())
-                print('delta value')
+                g.add_metric([self.modem.type, self.modem.host, self.modem.name], value.total_seconds())
                 metrics.append(g)
             else:
 
                 info = InfoMetricFamily(
                     name=self.metric_safe_name(''),
                     documentation=help,
-                    labels=['model', 'host'],
+                    labels=['model', 'host', 'modem'],
                 )
                 info.add_metric(
-                    [self.config.modem.type, self.config.modem.host],
+                    [self.modem.type, self.modem.host, self.modem.name],
                     {'value': data[key], 'key': key}
                 )
                 metrics.append(info)

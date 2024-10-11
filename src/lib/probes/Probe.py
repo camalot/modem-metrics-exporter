@@ -10,17 +10,30 @@ from lib.enums.DataStoreTypes import DataStoreTypes
 from lib.logging import setup_logging
 
 class Probe:
-    def __init__(self):
+    def __init__(self, modem):
         self.config = ApplicationConfiguration
         self.logger = setup_logging(self.__class__.__name__, self.config.logging)
+
         self.enabled = False
         self.endpoint = None
-        self.topic = None
-        self.interval = 120
         self.name = "Probe"
-        self.datastore = DataStoreTypes.from_str("FILE")
         signal.signal(signal.SIGTERM, self.sighandler)
+        self.modem = modem
         self._run_loop = True
+
+        # find the config for this collector
+        for pc in modem.probes:
+            if pc.type == self.__class__.__name__:
+                self._config = pc
+                break
+        if self._config is None:
+            self.logger.error(f"No config found for {self.__class__.__name__}")
+            raise Exception(f"No config found for {self.__class__.__name__}")
+
+        self.enabled = self._config.enabled
+        self.interval = self._config.interval
+        self.topic = self._config.topic
+        self.datastore = DataStoreTypes.from_str(self._config.datastore)
 
     def sighandler(self, signum, frame):
         self.logger.warning('<SIGTERM received>')
@@ -32,13 +45,15 @@ class Probe:
 
 
     def run(self):
+        self.logger = setup_logging(self.__class__.__name__, self.config.logging)
+
         if not self.enabled:
             self.logger.debug(f"{self.name} is disabled")
             return
         self.logger.debug(f"Running {self.name}")
         while self._run_loop:
             result = {}
-            url = f"{self.config.modem.scheme}://{self.config.modem.host}:{self.config.modem.port}{self.endpoint}"
+            url = f"{self.modem.scheme}://{self.modem.host}:{self.modem.port}{self.endpoint}"
             self.logger.debug(f"Fetching {self.name} data from {url}")
             response = requests.get(url)
             self.logger.debug(f"Response: {response.status_code}")
@@ -64,3 +79,4 @@ class Probe:
             self.logger.debug(f'{self.name} sleeping for {self.interval} seconds')
             # save the data to the datastore
             time.sleep(self.interval)
+        self.logger.debug(f"Exiting {self.name}")

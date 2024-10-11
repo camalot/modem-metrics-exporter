@@ -6,13 +6,10 @@ from lib.probes.Probe import Probe
 import lib.utils as utils
 
 class BroadbandStatisticsProbe(Probe):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, modem):
+        super().__init__(modem)
         self.name = self.__class__.__name__
-        self.logger.debug(f'Starting {self.name}')
-        self.enabled = True
-        self.interval = 120
-        self.topic = 'modemprobe/broadbandstats'
+        self.logger.debug(f'Initializing {self.name}')
         self.endpoint = '/cgi-bin/broadbandstatistics.ha'
         self.stats_pattern = r'<th[^>]*>(?P<name>.*?)(?:&nbsp;)*?\s*<\/th>\s*?<td[^>]*>\s*?(?P<value>.*?)\s*?<\/td>'
         self.help_pattern = r'<strong>(?P<property>.*?):</strong>\s*(?P<help>.*?)<br\s*/><br\s*/>'

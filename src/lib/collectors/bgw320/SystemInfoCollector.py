@@ -10,6 +10,7 @@ import lib.utils as utils
 class SystemInfoCollector(Collector):
     def __init__(self):
         super().__init__()
+        self.subspace = self.safe_name('system')
 
     def collect(self) -> typing.List[Metric]:
         # get datastore

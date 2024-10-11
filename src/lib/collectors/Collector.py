@@ -7,6 +7,7 @@ class Collector:
     def __init__(self):
         self.config = ApplicationConfiguration
         self.namespace = self.config.presentation.namespace
+        self.subspace = ''
         self.logger = setup_logging(self.__class__.__name__, self.config.logging)
 
         # find the config for this collector
@@ -22,7 +23,12 @@ class Collector:
 
     def metric_safe_name(self, name):
         safe_name = self.safe_name(name)
-        return f'{self.namespace}_{safe_name}'
+        safe_sub = self.safe_name(self.subspace)
+        safe_namespace = self.safe_name(self.namespace)
+        if self.subspace:
+            return f'{safe_namespace}_{safe_sub}_{safe_name}'
+
+        return f'{safe_namespace}_{safe_name}'
 
     def collect(self) -> typing.List[Metric]:
         return []

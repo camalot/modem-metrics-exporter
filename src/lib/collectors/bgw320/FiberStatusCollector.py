@@ -14,6 +14,7 @@ from prometheus_client.core import GaugeMetricFamily
 class FiberStatusCollector(Collector):
     def __init__(self):
         super().__init__()
+        self.subspace = self.safe_name('device')
 
     def collect(self) -> typing.List[Metric]:
         try:
@@ -35,15 +36,14 @@ class FiberStatusCollector(Collector):
             if data is None:
                 return metrics
 
+            metadata = data.get('metadata', {})
             sections = ['temperature', 'vcc', 'txbias', 'txpower', 'rxpower']
             for section in sections:
                 section_data = data.get(section.lower(), None)
                 if not section_data:
                     continue
 
-                help = ''
-                if section in data['metadata']['help']:
-                    help = data['metadata']['help'][section]
+                help = self.get_help(section, metadata)
 
                 g = GaugeMetricFamily(
                     name=self.metric_safe_name(section),
@@ -70,16 +70,14 @@ class FiberStatusCollector(Collector):
                             float(group.get(f'{key}T', '0')),
                         )
                 metrics.append(g)
-
             fiber = data.get('fiber', {})
             for key in fiber.keys():
                 value = fiber[key]
-                help = ''
-                if key in data['metadata']['help']:
-                    help = data['metadata']['help'][key]
+                help = self.get_help(key, metadata)
+
                 if value.isnumeric():
                     g = GaugeMetricFamily(
-                        name=self.metric_safe_name(f'fiber_{key}'),
+                        name=self.metric_safe_name(f'{key}'),
                         documentation=help,
                         labels=['model', 'host'],
                     )
@@ -90,7 +88,7 @@ class FiberStatusCollector(Collector):
                     metrics.append(g)
                 elif utils.is_booleanable(value):
                     g = GaugeMetricFamily(
-                        name=self.metric_safe_name(f'fiber_{key}'),
+                        name=self.metric_safe_name(f'{key}'),
                         documentation=help,
                         labels=['model', 'host'],
                     )
@@ -101,7 +99,7 @@ class FiberStatusCollector(Collector):
                     metrics.append(g)
                 else:
                     g = InfoMetricFamily(
-                        name=self.metric_safe_name(f'fiber'),
+                        name=self.metric_safe_name(f''),
                         documentation=help,
                         labels=['model', 'host'],
                     )
@@ -116,3 +114,8 @@ class FiberStatusCollector(Collector):
             self.logger.error(e)
             self.logger.error(traceback.format_exc())
             return []
+
+    def get_help(self, key: str, metadata: dict) -> str:
+        if key in metadata['help']:
+            return metadata['help'][key]
+        return ''

@@ -10,6 +10,7 @@ import lib.utils as utils
 class BroadbandStatisticsCollector(Collector):
     def __init__(self):
         super().__init__()
+        self.subspace = self.safe_name('broadband')
 
     def collect(self) -> typing.List[Metric]:
         # get datastore

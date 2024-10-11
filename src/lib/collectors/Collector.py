@@ -30,6 +30,11 @@ class Collector:
                 return f'{safe_namespace}_{safe_sub}_{safe_name}'
             else:
                 return f'{safe_namespace}_{safe_sub}'
+        return self.metric_root_safe_name(name)
+
+    def metric_root_safe_name(self, name):
+        safe_name = self.safe_name(name)
+        safe_namespace = self.safe_name(self.namespace)
         if safe_name:
             return f'{safe_namespace}_{safe_name}'
         else:

@@ -21,7 +21,7 @@ class HomeNetworkCollector(Collector):
         metrics = []
 
         g = GaugeMetricFamily(
-            name=self.metric_safe_name('collector'),
+            name=self.metric_root_safe_name('collector'),
             documentation='Indicates if the collector was initiated',
             labels=['type'],
         )

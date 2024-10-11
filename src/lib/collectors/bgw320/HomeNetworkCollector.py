@@ -129,14 +129,15 @@ class HomeNetworkCollector(Collector):
                     g.add_metric([self.config.modem.type, self.config.modem.host, name, lookup[f]], 1 if value_bool else 0)
                     metrics.append(g)
                 elif utils.is_string_list(value, '/'):
+                    i = InfoMetricFamily(
+                        name=self.metric_safe_name(section),
+                        documentation=self.get_help(name, metadata),
+                        labels=['model', 'host', 'name', 'frequency'],
+                    )
+                    i.add_metric([self.config.modem.type, self.config.modem.host, name, lookup[f]], {group: value})
                     for v in utils.to_string_list(value, '/'):
-                        i = InfoMetricFamily(
-                            name=self.metric_safe_name(section),
-                            documentation=self.get_help(name, metadata),
-                            labels=['model', 'host', 'name', 'frequency'],
-                        )
                         i.add_metric([self.config.modem.type, self.config.modem.host, name, lookup[f]], {group: v})
-                        metrics.append(i)
+                    metrics.append(i)
                 elif utils.is_string_list(value, ','):
                     for v in utils.to_string_list(value):
                         if v.isnumeric():

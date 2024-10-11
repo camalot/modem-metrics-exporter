@@ -69,11 +69,11 @@ class HomeNetworkCollector(Collector):
                 g.add_metric([self.config.modem.type, self.config.modem.host, name], float(value))
             else:
                 g = InfoMetricFamily(
-                    name=self.metric_safe_name(f'{section}_{group}'),
+                    name=self.metric_safe_name(f'{section}'),
                     documentation=self.get_help(name, metadata),
-                    labels=['model', 'host', 'name'],
+                    labels=['model', 'host'],
                 )
-                g.add_metric([self.config.modem.type, self.config.modem.host, name], {group: value})
+                g.add_metric([self.config.modem.type, self.config.modem.host, name], {'key': group, 'value': value})
             metrics.append(g)
         return metrics
 

@@ -18,7 +18,7 @@ def datetime_to_epoch(value: typing.Optional[datetime]) -> float:
     if not value:
         print('datetime_to_epoch: value is None')
         return 0.0
-    return float(value.timestamp())
+    return float((value - datetime(1970, 1, 1)).total_seconds())
 
 def is_timedelta(value: str, fmt: str = "") -> bool:
     if ':' not in value:
@@ -89,6 +89,12 @@ def to_datetime(value: str, fmt: str = '%Y-%m-%d %H:%M:%S') -> typing.Optional[d
     except ValueError:
         print(f'to_datetime: value {value} is not a valid datetime')
         return None
+
+def to_epoch(value: str, fmt: str = '%Y-%m-%d %H:%M:%S') -> float:
+    dt = to_datetime(value, fmt)
+    if dt:
+        return datetime_to_epoch(dt)
+    return 0.0
 
 def is_string_list(value: str, separator: str = ',') -> bool:
     if not value:

@@ -62,13 +62,13 @@ class SystemInfoCollector(Collector):
             else:
 
                 info = InfoMetricFamily(
-                    name=self.metric_safe_name('system'),
+                    name=self.metric_safe_name(''),
                     documentation=help,
                     labels=['model', 'host'],
                 )
                 info.add_metric(
                     [self.config.modem.type, self.config.modem.host],
-                    {key: data[key]}
+                    {'value': data[key], 'key': key}
                 )
                 metrics.append(info)
 

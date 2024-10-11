@@ -57,7 +57,7 @@ class HomeNetworkCollector(Collector):
         for group in data.keys():
             name = group
             g = GaugeMetricFamily(
-                name=self.metric_safe_name(section),
+                name=self.metric_safe_name(f'{section}_{group}'),
                 documentation=self.get_help(name, metadata),
                 labels=['model', 'host', 'name'],
             )
@@ -69,7 +69,7 @@ class HomeNetworkCollector(Collector):
                 g.add_metric([self.config.modem.type, self.config.modem.host, name], float(value))
             else:
                 g = InfoMetricFamily(
-                    name=self.metric_safe_name(section),
+                    name=self.metric_safe_name(f'{section}_{group}'),
                     documentation=self.get_help(name, metadata),
                     labels=['model', 'host', 'name'],
                 )
@@ -90,7 +90,7 @@ class HomeNetworkCollector(Collector):
             }
             for port in ports:
                 g = GaugeMetricFamily(
-                    name=self.metric_safe_name(name),
+                    name=self.metric_safe_name(f'{name}'),
                     documentation=self.get_help('lan', metadata),
                     labels=['model', 'host', 'name', 'port'],
                 )
@@ -120,7 +120,7 @@ class HomeNetworkCollector(Collector):
 
                 if utils.is_booleanable(value):
                     g = GaugeMetricFamily(
-                        name=self.metric_safe_name(section),
+                        name=self.metric_safe_name(f'{section}_{group}'),
                         documentation=self.get_help(name, metadata),
                         labels=['model', 'host', 'name', 'frequency'],
                     )
@@ -130,7 +130,7 @@ class HomeNetworkCollector(Collector):
                     metrics.append(g)
                 elif utils.is_string_list(value, '/'):
                     i = InfoMetricFamily(
-                        name=self.metric_safe_name(section),
+                        name=self.metric_safe_name(f'{section}_{group}'),
                         documentation=self.get_help(name, metadata),
                         labels=['model', 'host', 'name', 'frequency'],
                     )
@@ -142,7 +142,7 @@ class HomeNetworkCollector(Collector):
                     for v in utils.to_string_list(value):
                         if v.isnumeric():
                             g = GaugeMetricFamily(
-                                name=self.metric_safe_name(section),
+                                name=self.metric_safe_name(f'{section}_{group}'),
                                 documentation=self.get_help(name, metadata),
                                 labels=['model', 'host', 'name', 'frequency'],
                             )
@@ -150,7 +150,7 @@ class HomeNetworkCollector(Collector):
                             metrics.append(g)
                         else:
                             i = InfoMetricFamily(
-                                name=self.metric_safe_name(section),
+                                name=self.metric_safe_name(f'{section}_{group}'),
                                 documentation=self.get_help(name, metadata),
                                 labels=['model', 'host', 'name', 'frequency'],
                             )
@@ -158,7 +158,7 @@ class HomeNetworkCollector(Collector):
                             metrics.append(i)
                 elif value.isnumeric():
                     g = GaugeMetricFamily(
-                        name=self.metric_safe_name(section),
+                        name=self.metric_safe_name(f'{section}_{group}'),
                         documentation=self.get_help(name, metadata),
                         labels=['model', 'host', 'name', 'frequency'],
                     )
@@ -166,7 +166,7 @@ class HomeNetworkCollector(Collector):
                     metrics.append(g)
                 else:
                     i = InfoMetricFamily(
-                        name=self.metric_safe_name(section),
+                        name=self.metric_safe_name(f'{section}_{group}'),
                         documentation=self.get_help(name, metadata),
                         labels=['model', 'host', 'name', 'frequency'],
                     )

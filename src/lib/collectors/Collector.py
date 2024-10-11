@@ -26,9 +26,14 @@ class Collector:
         safe_sub = self.safe_name(self.subspace)
         safe_namespace = self.safe_name(self.namespace)
         if self.subspace:
-            return f'{safe_namespace}_{safe_sub}_{safe_name}'
-
-        return f'{safe_namespace}_{safe_name}'
+            if safe_name:
+                return f'{safe_namespace}_{safe_sub}_{safe_name}'
+            else:
+                return f'{safe_namespace}_{safe_sub}'
+        if safe_name:
+            return f'{safe_namespace}_{safe_name}'
+        else:
+            return safe_namespace
 
     def collect(self) -> typing.List[Metric]:
         return []

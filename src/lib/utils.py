@@ -1,3 +1,4 @@
+import re
 import typing
 from datetime import datetime, timedelta
 def is_booleanable(value: str) -> bool:
@@ -107,4 +108,7 @@ def clean_name_string(value: str) -> str:
     return clean_string(value.replace(' ', '').replace('-', '')).lower()
 
 def clean_string(value: str) -> str:
-    return value.strip().replace('&nbsp;', '').replace('(mbps)', '').replace('(ssid)', '').replace(' nm', '').replace('(', '').replace(')', '')
+    return strip_html_tags(value.strip().replace('%', '').replace('&nbsp;', '').replace('(mbps)', '').replace('(ssid)', '').replace(' nm', '').replace('(', '').replace(')', ''))
+
+def strip_html_tags(value: str) -> str:
+    return re.sub(r'<[^>]*>', '', value)

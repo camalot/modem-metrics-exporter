@@ -99,7 +99,7 @@ class FiberStatusCollector(Collector):
                     metrics.append(g)
                 else:
                     g = InfoMetricFamily(
-                        name=self.metric_safe_name(f''),
+                        name=self.metric_safe_name(key),
                         documentation=help,
                         labels=['model', 'host'],
                     )

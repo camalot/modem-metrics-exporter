@@ -8,3 +8,4 @@ class ProbeConfiguration:
         self.topic = base.get('topic', None)
         self.interval = base.get('interval', 60)
         self.datastore = base.get('datastore', 'FILE')
+        self.timeout = base.get('timeout', 5)

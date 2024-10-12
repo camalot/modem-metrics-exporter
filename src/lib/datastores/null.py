@@ -9,7 +9,7 @@ class NullDataStore(DataStore):
 
         self.logger.debug("Initializing Null Data Store")
 
-    def read(self, topic) -> typing.Any:
+    def read(self, topic) -> typing.Optional[dict]:
         return None
 
     def write(self, topic, data, ttl) -> bool:

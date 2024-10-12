@@ -98,7 +98,7 @@ class MqttDataStore(DataStore):
             msg = f"Unknown error code: {rc}"
         return msg
 
-    def read(self, topic: str) -> typing.Any:
+    def read(self, topic: str) -> typing.Optional[dict]:
         if topic in self.messages:
             self.logger.debug(f"Read from topic '{topic}'")
             result = json.loads(self.messages[topic])

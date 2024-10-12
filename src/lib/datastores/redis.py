@@ -27,12 +27,12 @@ class RedisDataStore(DataStore):
             self.r = Redis(host=self.host, port=int(self.port), db=int(self.db))
         self.logger.debug(f"Initializing Redis Data Store with host {self.host} and port {self.port}")
 
-    def read(self, topic: str) -> typing.Any:  # Read data from Redis
+    def read(self, topic: str) -> typing.Optional[dict]:  # Read data from Redis
         results = self.r.get(topic)  # Get the latest results from Redis for a given key
         if results:
             data = json.loads(results)  # type: ignore
         else:
-            data = ""
+            data = None
         return data
 
     def write(self, topic: str, data: dict, ttl: int) -> bool:  # Write data to Redis

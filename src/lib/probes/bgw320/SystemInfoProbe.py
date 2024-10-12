@@ -1,6 +1,4 @@
-import json
 import re
-import requests
 
 from lib.probes.Probe import Probe
 import lib.utils as utils

@@ -23,7 +23,7 @@ class MongoDBDatastore(DataStore):
             self.logger.error(f"Error writing to MongoDB: {e}")
             return False
 
-    def read(self, topic: str) -> typing.Any:
+    def read(self, topic: str) -> typing.Optional[dict]:
         result = self.collection.find_one({"id": topic})
         if result:
             return result["data"]

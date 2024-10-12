@@ -1,11 +1,9 @@
-import json
 import typing
 
 from lib.enums.ConfigurationDefaults import ConfigurationDefaults
-from lib.enums.EnvVars import EnvVars
 from lib.enums.YamlVars import YamlVars
-from lib.models.CollectorConfiguration import CollectorConfiguration
-from lib.models.ProbeConfiguration import ProbeConfiguration
+from config.CollectorConfiguration import CollectorConfiguration
+from config.ProbeConfiguration import ProbeConfiguration
 
 class ModemConfiguration:
     def __init__(self, base: dict = {}, load: bool = True):

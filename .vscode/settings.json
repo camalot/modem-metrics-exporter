@@ -1,0 +1,29 @@
+{
+  "cSpell.words": [
+    "BGBLACK",
+    "BGBLUE",
+    "BGCYAN",
+    "BGGREEN",
+    "BGMAGENTA",
+    "BGRED",
+    "BGWHITE",
+    "BGYELLOW",
+    "booleanable",
+    "dotenv",
+    "FGBLACK",
+    "FGBLUE",
+    "FGCYAN",
+    "FGGREEN",
+    "FGMAGENTA",
+    "FGRED",
+    "FGWHITE",
+    "FGYELLOW",
+    "levelno",
+    "modemprobe",
+    "paho",
+    "pymongo",
+    "sighandler",
+    "signum",
+    "userdata"
+  ]
+}

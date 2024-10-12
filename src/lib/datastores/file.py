@@ -63,7 +63,7 @@ class FileDataStore(DataStore):
             topic = f"{self.data_path}/{topic}"
         return topic
 
-    def read(self, topic: str) -> typing.Any:
+    def read(self, topic: str) -> typing.Optional[dict]:
         data = None
         try:
             topic = self.__normalize_topic(topic)

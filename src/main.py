@@ -2,10 +2,6 @@ import asyncio
 import signal
 import traceback
 from concurrent.futures import ProcessPoolExecutor
-from lib.probes.bgw320.BroadbandStatisticsProbe import BroadbandStatisticsProbe
-from lib.probes.bgw320.FiberStatusProbe import FiberStatusProbe
-from lib.probes.bgw320.HomeNetworkStatsProbe import HomeNetworkStatsProbe
-from lib.probes.bgw320.SystemInfoProbe import SystemInfoProbe
 from lib.presentations.PrometheusPresentation import PrometheusPresentation
 from lib.probes.ProbeFactory import ProbeFactory
 
@@ -54,43 +50,6 @@ class ModemProbe:
             exit(0)
 
 
-    # def SystemInfoProbe(self):
-    #     try:
-    #         probe = SystemInfoProbe()
-    #         # self.logger.debug('Starting probe')
-    #         probe.run()
-    #     except KeyboardInterrupt:
-    #         self.logger.warning('<KeyboardInterrupt received>')
-    #         exit(0)
-
-    # def BroadbandStatisticsProbe(self):
-    #     try:
-    #         probe = BroadbandStatisticsProbe()
-    #         # self.logger.debug('Starting probe')
-    #         probe.run()
-    #     except KeyboardInterrupt:
-    #         self.logger.warning('<KeyboardInterrupt received>')
-    #         exit(0)
-
-    # def FiberStatusProbe(self):
-    #     try:
-    #         probe = FiberStatusProbe()
-    #         # self.logger.debug('Starting probe')
-    #         probe.run()
-    #     except KeyboardInterrupt:
-    #         self.logger.warning('<KeyboardInterrupt received>')
-    #         exit(0)
-
-    # def HomeNetworkStatsProbe(self):
-    #     try:
-    #         probe = HomeNetworkStatsProbe()
-    #         # self.logger.debug('Starting probe')
-    #         probe.run()
-    #     except KeyboardInterrupt:
-    #         self.logger.warning('<KeyboardInterrupt received>')
-    #         exit(0)
-
-
 if __name__ == '__main__':
     modemprobe = ModemProbe()
     try:
@@ -101,12 +60,6 @@ if __name__ == '__main__':
 
             loop.run_in_executor(executor, modemprobe.presentation)
             modemprobe.run_probes(loop, executor)
-
-            # loop.run_in_executor(executor, modemprobe.SystemInfoProbe)
-            # loop.run_in_executor(executor, modemprobe.BroadbandStatisticsProbe)
-            # loop.run_in_executor(executor, modemprobe.FiberStatusProbe)
-            # loop.run_in_executor(executor, modemprobe.HomeNetworkStatsProbe)
-
 
             loop.run_forever()
         except DeprecationWarning:

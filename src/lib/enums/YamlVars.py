@@ -33,6 +33,7 @@ class YamlVars(Enum):
     LOG_DATE_FORMAT = "$.logging.date_format"
 
     MODEMS = "$.modems"
+    # These are called from within the modem object. that is why they are "top level"
     MODEM_NAME = "$.name"
     MODEM_HOST = "$.host"
     MODEM_USERNAME = "$.username"
@@ -88,7 +89,7 @@ class YamlVars(Enum):
         return list(result)
 
     def boolean(self, data: dict, default: bool) -> bool:
-        return bool(self.string(data, str(default)).lower() in ('true', '1', 't', 'y', 'yes'))
+        return bool(self.string(data, str(default)).lower() in ('true', '1', 't', 'y', 'yes', "on", "enabled"))
 
     def float(self, data: dict, default: float) -> float:
         return float(self.string(data, str(default)))

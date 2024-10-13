@@ -100,7 +100,7 @@ class FiberStatusCollector(Collector):
 
             for level in ['alarm', 'warning']:
                 level_gauge = GaugeMetricFamily(
-                    name=self.metric_safe_name({level}),
+                    name=self.metric_safe_name(level),
                     documentation='',
                     labels=['model', 'host', 'modem', 'type', 'sensor'],
                 )

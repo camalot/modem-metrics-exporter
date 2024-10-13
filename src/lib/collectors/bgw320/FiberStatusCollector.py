@@ -45,7 +45,7 @@ class FiberStatusCollector(Collector):
             documentation='Probe info that collected the data',
             labels=['type', 'model', 'host', 'modem'],
         )
-        probe_errors_metric = CounterMetricFamily(
+        probe_errors_metric = GaugeMetricFamily(
             name=self.metric_root_safe_name('probe_errors'),
             documentation='Probe errors',
             labels=['type', 'model', 'host', 'modem'],
@@ -92,20 +92,31 @@ class FiberStatusCollector(Collector):
             )
             metrics.append(g)
 
-            g = GaugeMetricFamily(
+            threshold_gauge = GaugeMetricFamily(
                 name=self.metric_safe_name(f'threshold'),
                 documentation='',
                 labels=['model', 'host', 'modem', 'threshold', 'type', 'sensor'],
             )
 
             for level in ['alarm', 'warning']:
+                level_gauge = GaugeMetricFamily(
+                    name=self.metric_safe_name({level}),
+                    documentation='',
+                    labels=['model', 'host', 'modem', 'type', 'sensor'],
+                )
+
                 group = section_data.get(level, {})
                 for key in ['high', 'low']:
-                    g.add_metric(
+                    level_gauge.add_metric(
+                        [self.modem.type, self.modem.host, self.modem.name, key, section],
+                        float(group.get(f'{key}', '0')),
+                    )
+                    threshold_gauge.add_metric(
                         [self.modem.type, self.modem.host, self.modem.name, key, level, section],
                         float(group.get(f'{key}T', '0')),
                     )
-            metrics.append(g)
+                metrics.append(level_gauge)
+            metrics.append(threshold_gauge)
         fiber = data.get('fiber', {})
         for key in fiber.keys():
                 value = fiber[key]

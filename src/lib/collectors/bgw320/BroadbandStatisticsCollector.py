@@ -44,7 +44,7 @@ class BroadbandStatisticsCollector(Collector):
             documentation='Probe info that collected the data',
             labels=['type', 'model', 'host', 'modem'],
         )
-        probe_errors_metric = CounterMetricFamily(
+        probe_errors_metric = GaugeMetricFamily(
             name=self.metric_root_safe_name('probe_errors'),
             documentation='Probe errors',
             labels=['type', 'model', 'host', 'modem'],

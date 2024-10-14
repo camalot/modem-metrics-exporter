@@ -147,7 +147,9 @@ class HomeNetworkStatsCollector(BGW320Collector):
                         documentation=self.get_help(name, metadata),
                         labels=['model', 'host', 'modem', 'name', 'frequency'],
                     )
-                    i.add_metric([self.modem.type, self.modem.host, self.modem.name, name, lookup[f]], {'key': group, 'value': value})
+                    group_plural = f'{group}s'
+                    name_plural = f'{name}s'
+                    i.add_metric([self.modem.type, self.modem.host, self.modem.name, name_plural, lookup[f]], {'key': group_plural, 'value': value})
                     for v in utils.to_string_list(value, '/'):
                         i.add_metric([self.modem.type, self.modem.host, self.modem.name, name, lookup[f]], {'key': group, 'value': v})
                     metrics.append(i)

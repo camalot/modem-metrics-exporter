@@ -65,22 +65,28 @@ class HomeNetworkStatsCollector(BGW320Collector):
                 documentation=self.get_help(key, metadata),
                 labels=['model', 'host', 'modem', 'name'],
             )
-            value = data[group].get('value', '0')
+
+            value = data[group].get('value', '')
             name = utils.strip_string(data[group].get('name', key))
 
             if utils.is_booleanable(value):
+                print(f'{key} / {name} is booleanable: {value}')
                 value_bool = utils.to_boolean(value)
                 g.add_metric([self.modem.type, self.modem.host, self.modem.name, name], 1 if value_bool else 0)
+                metrics.append(g)
             elif value.isnumeric():
+                print(f'{key} / {name} is numeric: {value}')
                 g.add_metric([self.modem.type, self.modem.host, self.modem.name, name], float(value))
+                metrics.append(g)
             else:
+                print(f'{key} / {name} is neither booleanable nor numeric: {value}')
                 info = InfoMetricFamily(
                     name=self.metric_safe_name(f'{section}'),
                     documentation=self.get_help(name, metadata),
                     labels=['model', 'host', 'modem', 'name'],
                 )
                 info.add_metric([self.modem.type, self.modem.host, self.modem.name, name], {'key': group, 'value': value})
-            metrics.append(g)
+                metrics.append(info)
         return metrics
 
     def process_lan(self, data: dict, metadata: dict) -> typing.List[Metric]:

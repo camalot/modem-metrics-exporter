@@ -112,12 +112,14 @@ def to_string_list(value: str, separator: str = ',') -> typing.List[str]:
         return []
     return value.split(separator)
 
+def strip_string(value: str) -> str:
+    return strip_html_tags(value.strip().replace('&nbsp;', ''))
 
 def clean_name_string(value: str) -> str:
-    return clean_string(value.replace(' ', '').replace('-', '')).lower()
+    return clean_string(value.replace(' ', '').replace('-', '').replace('(mbps)', '').replace('(ssid)', '')).lower()
 
 def clean_string(value: str) -> str:
-    return strip_html_tags(value.strip().replace('%', '').replace('&nbsp;', '').replace('(mbps)', '').replace('(ssid)', '').replace(' nm', '').replace('(', '').replace(')', ''))
+    return strip_html_tags(value.strip().replace('%', '').replace('&nbsp;', '').replace(' nm', '').replace('(', '').replace(')', ''))
 
 def strip_html_tags(value: str) -> str:
     return re.sub(r'<[^>]*>', '', value)

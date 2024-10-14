@@ -1,13 +1,8 @@
-import traceback
 import typing
 
 from lib.collectors.bgw320.BGW320Collector import BGW320Collector
-from lib.datastores.factory import DatastoreFactory
-from lib.enums.DataStoreTypes import DataStoreTypes
-from lib.models.ProbeResult import ProbeResult
 import lib.utils as utils
 
-from prometheus_client.core import CounterMetricFamily
 from prometheus_client.core import Metric
 from prometheus_client.core import InfoMetricFamily
 from prometheus_client.core import GaugeMetricFamily
@@ -43,21 +38,24 @@ class FiberStatusCollector(BGW320Collector):
 
             help = self.get_help(section, metadata)
 
+            value = section_data.get('value', '0')
+            name = section_data.get('name', section)
+
             g = GaugeMetricFamily(
                 name=self.metric_safe_name(section),
                 documentation=help,
-                labels=['model', 'host', 'modem'],
+                labels=['model', 'host', 'modem', 'name'],
             )
             g.add_metric(
-                [self.modem.type, self.modem.host, self.modem.name],
-                float(section_data.get('value', '0')),
+                [self.modem.type, self.modem.host, self.modem.name, name],
+                float(value),
             )
             metrics.append(g)
 
             threshold_gauge = GaugeMetricFamily(
                 name=self.metric_safe_name(f'threshold'),
                 documentation='',
-                labels=['model', 'host', 'modem', 'threshold', 'type', 'sensor'],
+                labels=['model', 'host', 'modem', 'threshold', 'type', 'sensor', 'name'],
             )
 
             for level in ['alarm', 'warning']:
@@ -81,17 +79,21 @@ class FiberStatusCollector(BGW320Collector):
             metrics.append(threshold_gauge)
         fiber = data.get('fiber', {})
         for key in fiber.keys():
-                value = fiber[key]
+                fiber_item = fiber[key]
+
+                value = fiber_item.get('value', '0')
+                name = fiber_item.get('name', key)
+
                 help = self.get_help(key, metadata)
 
                 if value.isnumeric():
                     g = GaugeMetricFamily(
                         name=self.metric_safe_name(f'{key}'),
                         documentation=help,
-                        labels=['model', 'host', 'modem'],
+                        labels=['model', 'host', 'modem', 'name'],
                     )
                     g.add_metric(
-                        [self.modem.type, self.modem.host, self.modem.name],
+                        [self.modem.type, self.modem.host, self.modem.name, name],
                         float(value),
                     )
                     metrics.append(g)
@@ -99,23 +101,23 @@ class FiberStatusCollector(BGW320Collector):
                     g = GaugeMetricFamily(
                         name=self.metric_safe_name(f'{key}'),
                         documentation=help,
-                        labels=['model', 'host', 'modem'],
+                        labels=['model', 'host', 'modem', 'name'],
                     )
                     g.add_metric(
-                        [self.modem.type, self.modem.host, self.modem.name],
+                        [self.modem.type, self.modem.host, self.modem.name, name],
                         utils.to_boolean(value),
                     )
                     metrics.append(g)
                 else:
-                    g = InfoMetricFamily(
-                        name=self.metric_safe_name(key),
+                    info = InfoMetricFamily(
+                        name=self.metric_safe_name(''),
                         documentation=help,
-                        labels=['model', 'host', 'modem'],
+                        labels=['model', 'host', 'modem', 'name'],
                     )
-                    g.add_metric(
-                        [self.modem.type, self.modem.host, self.modem.name],
-                        {key: fiber[key]},
+                    info.add_metric(
+                        [self.modem.type, self.modem.host, self.modem.name, name],
+                        {'value': value, 'key': key},
                     )
-                    metrics.append(g)
+                    metrics.append(info)
 
         return metrics

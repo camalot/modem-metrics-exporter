@@ -20,9 +20,10 @@ class SystemInfoProbe(Probe):
         result = {}
         matches = re.finditer(self.pattern, response, re.IGNORECASE | re.MULTILINE)
         for _, match in enumerate(matches):
+            original_name = utils.strip_string(match.group('name'))
             name = utils.clean_name_string(match.group('name'))
             value = match.group('value')
-            result[name] = value
+            result[name] = {'name': original_name, 'value': value}
 
         # get all help text
         matches = re.finditer(self.help_pattern, response, re.IGNORECASE | re.MULTILINE)

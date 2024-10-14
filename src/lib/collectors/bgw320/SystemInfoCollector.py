@@ -1,14 +1,9 @@
-import traceback
 import typing
 
 from prometheus_client.core import GaugeMetricFamily
 from prometheus_client.core import Metric
 from prometheus_client.core import InfoMetricFamily
-from lib.enums.DataStoreTypes import DataStoreTypes
-from lib.datastores.factory import DatastoreFactory
-from lib.collectors.Collector import Collector
 from lib.collectors.bgw320.BGW320Collector import BGW320Collector
-from lib.models.ProbeResult import ProbeResult
 import lib.utils as utils
 
 class SystemInfoCollector(BGW320Collector):
@@ -38,34 +33,37 @@ class SystemInfoCollector(BGW320Collector):
             if key == 'metadata':
                 continue
             help = self.get_help(key, data['metadata'])
-            value = data[key]
+
+            value = data[key].get('value', '0')
+            name = data[key].get('name', key)
+
             if utils.is_datetime(value, '%Y/%m/%d %H:%M:%S'):
                 value = utils.diff_now(utils.to_datetime(value, '%Y/%m/%d %H:%M:%S'))
                 g = GaugeMetricFamily(
                     name=self.metric_safe_name(key),
                     documentation=help,
-                    labels=['model', 'host', 'modem'],
+                    labels=['model', 'host', 'modem', 'name'],
                 )
-                g.add_metric([self.modem.type, self.modem.host, self.modem.name], value)
+                g.add_metric([self.modem.type, self.modem.host, self.modem.name, name], value)
                 metrics.append(g)
             elif utils.is_timedelta(value):
                 value = utils.to_timedelta(value)
                 g = GaugeMetricFamily(
                     name=self.metric_safe_name(key),
                     documentation=help,
-                    labels=['model', 'host', 'modem'],
+                    labels=['model', 'host', 'modem', 'name'],
                 )
-                g.add_metric([self.modem.type, self.modem.host, self.modem.name], value.total_seconds())
+                g.add_metric([self.modem.type, self.modem.host, self.modem.name, name], value.total_seconds())
                 metrics.append(g)
             else:
                 info = InfoMetricFamily(
                     name=self.metric_safe_name(''),
                     documentation=help,
-                    labels=['model', 'host', 'modem'],
+                    labels=['model', 'host', 'modem', 'name'],
                 )
                 info.add_metric(
-                    [self.modem.type, self.modem.host, self.modem.name],
-                    {'value': data[key], 'key': key}
+                    [self.modem.type, self.modem.host, self.modem.name, name],
+                    {'value': value, 'key': key}
                 )
                 metrics.append(info)
 

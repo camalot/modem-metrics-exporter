@@ -1,6 +1,12 @@
+import traceback
 import typing
 
+from lib.datastores.factory import DatastoreFactory
+from lib.enums.DataStoreTypes import DataStoreTypes
 from lib.logging import setup_logging
+from lib.models.ProbeResult import ProbeResult
+from prometheus_client.core import GaugeMetricFamily
+
 from prometheus_client.core import Metric
 from config import ApplicationConfiguration
 class Collector:
@@ -42,3 +48,54 @@ class Collector:
 
     def collect(self) -> typing.List[Metric]:
         return []
+
+    def get_probe_data(self) -> typing.Optional[ProbeResult]:
+        try:
+            # get datastore
+            datastore = DatastoreFactory().create(DataStoreTypes.from_str(self._config.datastore))
+            # get data
+            data_result = datastore.read(topic=str(self._config.topic))
+            probe_data = ProbeResult.from_dict(data_result)
+
+            if probe_data:
+                return probe_data
+            else:
+                self.logger.error(f'No data found for {self._config.topic}')
+                return None
+        except Exception as e:
+            self.logger.error(e)
+            self.logger.error(traceback.format_exc())
+            return None
+
+    def get_base_metrics(self, probe_data: typing.Optional[ProbeResult], collector_state: bool) -> typing.List[Metric]:
+        metrics = []
+        probe_metric = GaugeMetricFamily(
+            name=self.metric_root_safe_name('probe'),
+            documentation='Probe info that collected the data',
+            labels=['type', 'model', 'host', 'modem'],
+        )
+        probe_errors_metric = GaugeMetricFamily(
+            name=self.metric_root_safe_name('probe_errors'),
+            documentation='Probe errors',
+            labels=['type', 'model', 'host', 'modem'],
+        )
+
+        collector_metric = GaugeMetricFamily(
+            name=self.metric_root_safe_name('collector'),
+            documentation='Indicates if the collector was initiated',
+            labels=['type', 'model', 'host', 'modem'],
+        )
+        collector_metric.add_metric(
+            [self.__class__.__name__, self.modem.type, self.modem.host, self.modem.name], 1 if collector_state else 0
+        )
+        metrics.append(collector_metric)
+
+        if probe_data:
+            probe_metric.add_metric([probe_data.probe, self.modem.type, self.modem.host, self.modem.name], 1)
+            metrics.append(probe_metric)
+            probe_errors_metric.add_metric(
+                [probe_data.probe, self.modem.type, self.modem.host, self.modem.name], len(probe_data.errors)
+            )
+            metrics.append(probe_errors_metric)
+
+        return metrics

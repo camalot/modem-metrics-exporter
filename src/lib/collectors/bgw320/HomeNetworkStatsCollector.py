@@ -143,7 +143,7 @@ class HomeNetworkStatsCollector(BGW320Collector):
                     metrics.append(g)
                 elif utils.is_string_list(value, '/'):
                     i = InfoMetricFamily(
-                        name=self.metric_safe_name(f'{section}_{group}'),
+                        name=self.metric_safe_name(f'{section}'),
                         documentation=self.get_help(name, metadata),
                         labels=['model', 'host', 'modem', 'name', 'frequency'],
                     )
@@ -163,11 +163,11 @@ class HomeNetworkStatsCollector(BGW320Collector):
                             metrics.append(g)
                         else:
                             i = InfoMetricFamily(
-                                name=self.metric_safe_name(f'{section}_{group}'),
+                                name=self.metric_safe_name(f'{section}'),
                                 documentation=self.get_help(name, metadata),
                                 labels=['model', 'host', 'modem', 'name', 'frequency'],
                             )
-                            i.add_metric([self.modem.type, self.modem.host, self.modem.name, name, lookup[f]], {group: v})
+                            i.add_metric([self.modem.type, self.modem.host, self.modem.name, name, lookup[f]], {'key': group, 'value': v})
                             metrics.append(i)
                 elif value.isnumeric():
                     g = GaugeMetricFamily(
@@ -179,11 +179,11 @@ class HomeNetworkStatsCollector(BGW320Collector):
                     metrics.append(g)
                 else:
                     i = InfoMetricFamily(
-                        name=self.metric_safe_name(f'{section}_{group}'),
+                        name=self.metric_safe_name(f'{section}'),
                         documentation=self.get_help(name, metadata),
                         labels=['model', 'host', 'modem', 'name', 'frequency'],
                     )
-                    i.add_metric([self.modem.type, self.modem.host, self.modem.name, name, lookup[f]], {group: value})
+                    i.add_metric([self.modem.type, self.modem.host, self.modem.name, name, lookup[f]], {'key': group, 'value': value})
                     metrics.append(i)
         return metrics
 

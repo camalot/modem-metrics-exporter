@@ -94,23 +94,29 @@ class HomeNetworkStatsProbe(Probe):
         matches = re.finditer(pattern, stats, kwargs['options'])
         for _, match in enumerate(matches):
             original_name = utils.strip_string(match.group('name'))
-            name = utils.clean_name_string(original_name)
+            key = utils.clean_name_string(original_name)
 
             if section not in result:
                 result[section] = {}
-            if name not in result[section]:
-                result[section][name] = {}
+            if key not in result[section]:
+                result[section][key] = {}
 
             match_group = match.groupdict()
             group_keys = match_group.keys()
             if len(group_keys) == 2 and 'name' in group_keys and 'value' in group_keys:
-                result[section][name]['value'] = utils.clean_string(match.group('value'))
-                result[section][name]['name'] = original_name
+                result[section][key]['value'] = utils.clean_string(match.group('value'))
+                result[section][key]['name'] = original_name
             else:
                 for x in match.groupdict().keys():
                     mval = match.group(x)
                     if mval:
-                        result[section][name][x] = utils.clean_string(match.group(x))
+                        if x in result[section][key]:
+                            # move the old one to an array
+                            old_val = result[section][key][x]
+                            # add the new one to the array
+                            result[section][key][x] = [old_val, utils.clean_string(mval)]
+                        else:
+                            result[section][key][x] = utils.clean_string(match.group(x))
                     else:
-                        result[section][name][x] = None
+                        result[section][key][x] = None
         return result

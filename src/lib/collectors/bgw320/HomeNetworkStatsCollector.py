@@ -114,10 +114,71 @@ class HomeNetworkStatsCollector(BGW320Collector):
                 metrics.append(g)
         return metrics
 
+    def porcess_wifi_item(self, value, section, group, name, metadata, freq) -> typing.List[Metric]:
+        metrics = []
+        if utils.is_booleanable(value):
+            g = GaugeMetricFamily(
+                name=self.metric_safe_name(f'{section}_{group}'),
+                documentation=self.get_help(name, metadata),
+                labels=['model', 'host', 'modem', 'name', 'frequency'],
+            )
+
+            value_bool = utils.to_boolean(value)
+            g.add_metric(
+                [self.modem.type, self.modem.host, self.modem.name, name, freq], 1 if value_bool else 0
+            )
+            metrics.append(g)
+        elif utils.is_string_list(value, '/'):
+            i = InfoMetricFamily(
+                name=self.metric_safe_name(f'{section}'),
+                documentation=self.get_help(name, metadata),
+                labels=['model', 'host', 'modem', 'name', 'frequency'],
+            )
+            group_plural = f'{group}s'
+            name_plural = f'{name}s'
+            i.add_metric([self.modem.type, self.modem.host, self.modem.name, name_plural, freq], {'key': group_plural, 'value': value})
+            for v in utils.to_string_list(value, '/'):
+                i.add_metric([self.modem.type, self.modem.host, self.modem.name, name, freq], {'key': group, 'value': v})
+            metrics.append(i)
+        elif utils.is_string_list(value, ','):
+            for v in utils.to_string_list(value):
+                if v.isnumeric():
+                    g = GaugeMetricFamily(
+                        name=self.metric_safe_name(f'{section}_{group}'),
+                        documentation=self.get_help(name, metadata),
+                        labels=['model', 'host', 'modem', 'name', 'frequency'],
+                    )
+                    g.add_metric([self.modem.type, self.modem.host, self.modem.name, name, freq], float(v))
+                    metrics.append(g)
+                else:
+                    i = InfoMetricFamily(
+                        name=self.metric_safe_name(f'{section}'),
+                        documentation=self.get_help(name, metadata),
+                        labels=['model', 'host', 'modem', 'name', 'frequency'],
+                    )
+                    i.add_metric([self.modem.type, self.modem.host, self.modem.name, name, freq], {'key': group, 'value': v})
+                    metrics.append(i)
+        elif value.isnumeric():
+            g = GaugeMetricFamily(
+                name=self.metric_safe_name(f'{section}_{group}'),
+                documentation=self.get_help(name, metadata),
+                labels=['model', 'host', 'modem', 'name', 'frequency'],
+            )
+            g.add_metric([self.modem.type, self.modem.host, self.modem.name, name, freq], float(value))
+            metrics.append(g)
+        else:
+            i = InfoMetricFamily(
+                name=self.metric_safe_name(f'{section}'),
+                documentation=self.get_help(name, metadata),
+                labels=['model', 'host', 'modem', 'name', 'frequency'],
+            )
+            i.add_metric([self.modem.type, self.modem.host, self.modem.name, name, freq], {'key': group, 'value': value})
+            metrics.append(i)
+        return metrics
+
     def process_wifi(self, section: str, data: dict, metadata: dict) -> typing.List[Metric]:
         metrics = []
         for group in data.keys():
-            name = utils.strip_string(data[group]['name'])
             frequencies = ['ghz24', 'ghz5']
             lookup = {
                 'ghz24': '2.4GHz',
@@ -129,64 +190,24 @@ class HomeNetworkStatsCollector(BGW320Collector):
                 if value is None:
                     continue
 
-                if utils.is_booleanable(value):
-                    g = GaugeMetricFamily(
-                        name=self.metric_safe_name(f'{section}_{group}'),
-                        documentation=self.get_help(name, metadata),
-                        labels=['model', 'host', 'modem', 'name', 'frequency'],
-                    )
-
-                    value_bool = utils.to_boolean(value)
-                    g.add_metric(
-                        [self.modem.type, self.modem.host, self.modem.name, name, lookup[f]], 1 if value_bool else 0
-                    )
-                    metrics.append(g)
-                elif utils.is_string_list(value, '/'):
-                    i = InfoMetricFamily(
-                        name=self.metric_safe_name(f'{section}'),
-                        documentation=self.get_help(name, metadata),
-                        labels=['model', 'host', 'modem', 'name', 'frequency'],
-                    )
-                    group_plural = f'{group}s'
-                    name_plural = f'{name}s'
-                    i.add_metric([self.modem.type, self.modem.host, self.modem.name, name_plural, lookup[f]], {'key': group_plural, 'value': value})
-                    for v in utils.to_string_list(value, '/'):
-                        i.add_metric([self.modem.type, self.modem.host, self.modem.name, name, lookup[f]], {'key': group, 'value': v})
-                    metrics.append(i)
-                elif utils.is_string_list(value, ','):
-                    for v in utils.to_string_list(value):
-                        if v.isnumeric():
-                            g = GaugeMetricFamily(
-                                name=self.metric_safe_name(f'{section}_{group}'),
-                                documentation=self.get_help(name, metadata),
-                                labels=['model', 'host', 'modem', 'name', 'frequency'],
-                            )
-                            g.add_metric([self.modem.type, self.modem.host, self.modem.name, name, lookup[f]], float(v))
-                            metrics.append(g)
+                if isinstance(value, list):
+                    # loop through the list
+                    for i, v in enumerate(value):
+                        names = data[group]['name']
+                        if isinstance(names, list):
+                            name = utils.strip_string(names[i])
                         else:
-                            i = InfoMetricFamily(
-                                name=self.metric_safe_name(f'{section}'),
-                                documentation=self.get_help(name, metadata),
-                                labels=['model', 'host', 'modem', 'name', 'frequency'],
-                            )
-                            i.add_metric([self.modem.type, self.modem.host, self.modem.name, name, lookup[f]], {'key': group, 'value': v})
-                            metrics.append(i)
-                elif value.isnumeric():
-                    g = GaugeMetricFamily(
-                        name=self.metric_safe_name(f'{section}_{group}'),
-                        documentation=self.get_help(name, metadata),
-                        labels=['model', 'host', 'modem', 'name', 'frequency'],
-                    )
-                    g.add_metric([self.modem.type, self.modem.host, self.modem.name, name, lookup[f]], float(value))
-                    metrics.append(g)
+                            name = utils.strip_string(names)
+                        
+                        wifi_metrics = self.porcess_wifi_item(v, section, group, name, metadata, lookup[f])
+                        metrics.extend(wifi_metrics)
                 else:
-                    i = InfoMetricFamily(
-                        name=self.metric_safe_name(f'{section}'),
-                        documentation=self.get_help(name, metadata),
-                        labels=['model', 'host', 'modem', 'name', 'frequency'],
-                    )
-                    i.add_metric([self.modem.type, self.modem.host, self.modem.name, name, lookup[f]], {'key': group, 'value': value})
-                    metrics.append(i)
+                    name = utils.strip_string(data[group]['name'])
+                    # single value
+                    wifi_metrics = self.porcess_wifi_item(value, section, group, name, metadata, lookup[f])
+                    metrics.extend(wifi_metrics)
+
+
         return metrics
 
     def process_interfaces(self, data: dict, metadata: dict) -> typing.List[Metric]:

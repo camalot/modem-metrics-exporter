@@ -63,15 +63,19 @@ class HomeNetworkStatsProbe(Probe):
         for group in self.groups:
             matches = re.finditer(group['pattern'], response, re.IGNORECASE | re.DOTALL)
             for _, match in enumerate(matches):
+                original_name = utils.strip_string(match.group('section'))
                 section = utils.clean_name_string(group.get('name', 'unknown'))
                 stats = match.group('stats')
                 if section not in result:
                     result[section] = {}
                 if 'value' in match.groupdict():
                     result[section]['value'] = match.group('value')
+                    if 'name' not in result[section]:
+                        result[section]['name'] = original_name
                 stats_result = self.parse_stats(section, stats, group['stats'], options=group['options'])
                 if stats_result:
                     result.update(stats_result)
+
         # get all help text
         matches = re.finditer(self.help_pattern, response, re.IGNORECASE | re.MULTILINE)
         if 'metadata' not in result:
@@ -89,7 +93,8 @@ class HomeNetworkStatsProbe(Probe):
         result = {}
         matches = re.finditer(pattern, stats, kwargs['options'])
         for _, match in enumerate(matches):
-            name = utils.clean_name_string(match.group('name'))
+            original_name = utils.strip_string(match.group('name'))
+            name = utils.clean_name_string(original_name)
 
             if section not in result:
                 result[section] = {}
@@ -99,7 +104,8 @@ class HomeNetworkStatsProbe(Probe):
             match_group = match.groupdict()
             group_keys = match_group.keys()
             if len(group_keys) == 2 and 'name' in group_keys and 'value' in group_keys:
-                result[section][name] = utils.clean_string(match.group('value'))
+                result[section][name]['value'] = utils.clean_string(match.group('value'))
+                result[section][name]['name'] = original_name
             else:
                 for x in match.groupdict().keys():
                     mval = match.group(x)

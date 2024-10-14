@@ -59,32 +59,34 @@ class HomeNetworkStatsCollector(BGW320Collector):
     def process_generic(self, section: str, data: dict, metadata: dict) -> typing.List[Metric]:
         metrics = []
         for group in data.keys():
-            name = group
+            key = group
             g = GaugeMetricFamily(
                 name=self.metric_safe_name(f'{section}_{group}'),
-                documentation=self.get_help(name, metadata),
+                documentation=self.get_help(key, metadata),
                 labels=['model', 'host', 'modem', 'name'],
             )
-            value = data[group]
+            value = data[group].get('value', '0')
+            name = utils.strip_string(data[group].get('name', key))
+
             if utils.is_booleanable(value):
                 value_bool = utils.to_boolean(value)
                 g.add_metric([self.modem.type, self.modem.host, self.modem.name, name], 1 if value_bool else 0)
             elif value.isnumeric():
-                g.add_metric([self.modem.type, self.modem.host, self.modem.name,name], float(value))
+                g.add_metric([self.modem.type, self.modem.host, self.modem.name, name], float(value))
             else:
-                g = InfoMetricFamily(
+                info = InfoMetricFamily(
                     name=self.metric_safe_name(f'{section}'),
                     documentation=self.get_help(name, metadata),
                     labels=['model', 'host', 'modem', 'name'],
                 )
-                g.add_metric([self.modem.type, self.modem.host, self.modem.name, name], {'key': group, 'value': value})
+                info.add_metric([self.modem.type, self.modem.host, self.modem.name, name], {'key': group, 'value': value})
             metrics.append(g)
         return metrics
 
     def process_lan(self, data: dict, metadata: dict) -> typing.List[Metric]:
         metrics = []
         for section in data.keys():
-            name = data[section]['name']
+            name = utils.strip_string(data[section]['name'])
             ports = ['port1', 'port2', 'port3', 'port4']
             lookup = {
                 'port1': 'Port 1',
@@ -112,7 +114,7 @@ class HomeNetworkStatsCollector(BGW320Collector):
     def process_wifi(self, section: str, data: dict, metadata: dict) -> typing.List[Metric]:
         metrics = []
         for group in data.keys():
-            name = data[group]['name']
+            name = utils.strip_string(data[group]['name'])
             frequencies = ['ghz24', 'ghz5']
             lookup = {
                 'ghz24': '2.4GHz',
@@ -142,9 +144,9 @@ class HomeNetworkStatsCollector(BGW320Collector):
                         documentation=self.get_help(name, metadata),
                         labels=['model', 'host', 'modem', 'name', 'frequency'],
                     )
-                    i.add_metric([self.modem.type, self.modem.host, self.modem.name, name, lookup[f]], {group: value})
+                    i.add_metric([self.modem.type, self.modem.host, self.modem.name, name, lookup[f]], {'key': group, 'value': value})
                     for v in utils.to_string_list(value, '/'):
-                        i.add_metric([self.modem.type, self.modem.host, self.modem.name, name, lookup[f]], {group: v})
+                        i.add_metric([self.modem.type, self.modem.host, self.modem.name, name, lookup[f]], {'key': group, 'value': v})
                     metrics.append(i)
                 elif utils.is_string_list(value, ','):
                     for v in utils.to_string_list(value):
@@ -191,7 +193,7 @@ class HomeNetworkStatsCollector(BGW320Collector):
                 g = GaugeMetricFamily(
                     name=self.metric_safe_name(f'interface'),
                     documentation=self.get_help('interfaces', metadata),
-                    labels=['model', 'host', 'modem', 'interface', 'status', 'mode'],
+                    labels=['model', 'host', 'modem', 'interface', 'status', 'mode', 'name'],
                 )
                 g.add_metric(
                     [self.modem.type, self.modem.host, self.modem.name, interface['name'], interface['status'], x],

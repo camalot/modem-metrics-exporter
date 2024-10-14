@@ -1,6 +1,7 @@
 import typing
 
 from prometheus_client.core import GaugeMetricFamily
+from prometheus_client.core import InfoMetricFamily
 from prometheus_client.core import Metric
 from lib.collectors.bgw320.BGW320Collector import BGW320Collector
 import lib.utils as utils
@@ -35,16 +36,17 @@ class BroadbandStatisticsCollector(BGW320Collector):
             # help = self.get_help(section, metadata)
             section_data = data[section]
             for key in section_data.keys():
-                value = section_data[key]
+                name = section_data[key].get('name', key)
+                value = section_data[key].get('value', '')
                 help = self.get_help(key, metadata)
                 if utils.is_booleanable(value):
                     value = utils.to_boolean(value)
                     g = GaugeMetricFamily(
                         name=self.metric_safe_name(key),
                         documentation=help,
-                        labels=['model', 'host', 'modem'],
+                        labels=['model', 'host', 'modem', 'name'],
                     )
-                    g.add_metric([self.modem.type, self.modem.host, self.modem.name], value)
+                    g.add_metric([self.modem.type, self.modem.host, self.modem.name, name], value)
                     metrics.append(g)
                 elif value.isnumeric():
                     value = float(value)
@@ -52,9 +54,20 @@ class BroadbandStatisticsCollector(BGW320Collector):
                     g = GaugeMetricFamily(
                         name=self.metric_safe_name(f'{section}_{key}'),
                         documentation=help,
-                        labels=['model', 'host', 'modem'],
+                        labels=['model', 'host', 'modem', 'name'],
                     )
-                    g.add_metric([self.modem.type, self.modem.host, self.modem.name], value)
+                    g.add_metric([self.modem.type, self.modem.host, self.modem.name, name], value)
                     metrics.append(g)
+                else:
+                    info = InfoMetricFamily(
+                        name=self.metric_safe_name(''),
+                        documentation=help,
+                        labels=['model', 'host', 'modem', 'name'],
+                    )
+                    info.add_metric(
+                        [self.modem.type, self.modem.host, self.modem.name, name],
+                        {'value': value, 'key': key}
+                    )
+                    metrics.append(info)
 
         return metrics

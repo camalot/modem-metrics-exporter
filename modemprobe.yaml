@@ -7,11 +7,13 @@ logging:
 modems:
   - name: AT&T BGW320
     host: 192.168.1.254
+    enabled: true
     scheme: http
     port: 80
     type: bgw320
 
     collectors:
+      # Collectors can only read from a single datastore.
       - type: FiberStatusCollector
         enabled: true
         topic: modemprobe/fiberstatus
@@ -33,29 +35,41 @@ modems:
         datastore: FILE
 
     probes:
+      # Probes can have multiple datastores
+      # this will store the data in those datastores
+      # in the order they are defined
+      # A collector can only read from a single datastore
       - type: FiberStatusProbe
         enabled: true
         interval: 120
-        datastore: FILE
-        topic: modemprobe/fiberstatus
+        datastores:
+          - type: FILE
+            topic: modemprobe/fiberstatus
+
+        # if you dont specify multiple datastores, you can use singular datastore
+        # topic: modemprobe/fiberstatus
+        # datastore: FILE
 
       - type: HomeNetworkStatsProbe
         enabled: true
         interval: 120
-        datastore: FILE
-        topic: modemprobe/lanstats
+        datastores:
+          - type: FILE
+            topic: modemprobe/lanstats
 
       - type: SystemInfoProbe
         enabled: true
         interval: 600
-        datastore: FILE
-        topic: modemprobe/systeminfo
+        datastores:
+          - type: FILE
+            topic: modemprobe/systeminfo
 
       - type: BroadbandStatisticsProbe
         enabled: true
-        datastore: FILE
         interval: 120
-        topic: modemprobe/broadbandstats
+        datastores:
+          - type: FILE
+            topic: modemprobe/broadbandstats
 
 datastore:
   mqtt:
@@ -63,10 +77,6 @@ datastore:
     port: 1883
     username: 'modemprobe'
     password: 'modemprobe'
-    # client_id: 'modemprobe'
-    # keepalive: 60
-    # qos: 0
-    # retain: no
   file:
     path: '/data/cache'
   redis:

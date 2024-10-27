@@ -14,6 +14,7 @@ class ModemConfiguration:
         self.password = YamlVars.MODEM_PASSWORD.string(base, ConfigurationDefaults.MODEM_PASSWORD)
         self.scheme = YamlVars.MODEM_SCHEME.string(base, ConfigurationDefaults.MODEM_SCHEME)
         self.type = YamlVars.MODEM_TYPE.string(base, ConfigurationDefaults.MODEM_TYPE)
+        self.enabled = YamlVars.MODEM_ENABLED.boolean(base, ConfigurationDefaults.MODEM_ENABLED)
 
         self.collectors: typing.List[CollectorConfiguration] = []
         self.probes: typing.List[ProbeConfiguration] = []

@@ -36,6 +36,7 @@ class YamlVars(Enum):
     # These are called from within the modem object. that is why they are "top level"
     MODEM_NAME = "$.name"
     MODEM_HOST = "$.host"
+    MODEM_ENABLED = "$.enabled"
     MODEM_USERNAME = "$.username"
     MODEM_PASSWORD = "$.password"
     MODEM_PORT = "$.port"

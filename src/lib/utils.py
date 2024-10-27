@@ -1,6 +1,7 @@
 import re
 import typing
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone, UTC
+
 def is_booleanable(value: str) -> bool:
     if value:
         return value.lower() in ('disabled', 'enabled', 'down', 'up', 'unavailable', 'available', 'off', 'on')
@@ -123,3 +124,14 @@ def clean_string(value: str) -> str:
 
 def strip_html_tags(value: str) -> str:
     return re.sub(r'<[^>]*>', '', value)
+
+def get_timestamp() -> float:
+    return to_timestamp(datetime.now(UTC))
+
+def to_timestamp(date, tz: typing.Optional[timezone] = None) -> float:
+    date = date.replace(tzinfo=tz)
+    return (date - datetime(1970, 1, 1, tzinfo=tz)).total_seconds()
+
+
+def from_timestamp(timestamp: float) -> datetime:
+    return datetime.fromtimestamp(timestamp)

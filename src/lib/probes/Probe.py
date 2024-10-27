@@ -3,8 +3,10 @@ import requests
 import signal
 import time
 import traceback
+import typing
 
 from config import ApplicationConfiguration
+from config.ProbeDataStoreConfiguration import ProbeDataStoreConfiguration
 from lib.datastores.factory import DatastoreFactory
 from lib.enums.DataStoreTypes import DataStoreTypes
 from lib.logging import setup_logging
@@ -33,18 +35,16 @@ class Probe:
 
         self.enabled = self._config.enabled
         self.interval = self._config.interval
-        self.topic = self._config.topic
+
         self.timeout = self._config.timeout
-        self.datastore = DataStoreTypes.from_str(self._config.datastore)
+        self.datastores: typing.List[ProbeDataStoreConfiguration] = self._config.datastores
 
     def sighandler(self, signum, frame):
         self.logger.warning('<SIGTERM received>')
         self._run_loop = False
 
-
     def parse(self, response) -> dict:
         raise NotImplementedError('You must implement the parse method')
-
 
     def run(self):
         self.logger = setup_logging(self.__class__.__name__, self.config.logging)
@@ -85,11 +85,15 @@ class Probe:
                         break
 
             try:
-                data_store = DatastoreFactory().create(self.datastore)
-                cache_interval = self.interval + 15  # Set the cache TTL slightly longer than the probe interval
-                topic = self.topic if self.topic else self.name
                 probe_data = ProbeResult(modem=self.modem.name, probe=self.name, data=result, errors=errors).to_dict()
-                data_store.write(topic, probe_data, cache_interval)
+                for datastore_config in self.datastores:
+                    if not datastore_config.enabled:
+                        continue
+                    topic = datastore_config.topic if datastore_config.topic else self.name
+                    data_store_type = DataStoreTypes.from_str(datastore_config.type)
+                    data_store = DatastoreFactory().create(data_store_type)
+                    cache_interval = self.interval + 15  # Set the cache TTL slightly longer than the probe interval
+                    data_store.write(topic, probe_data, cache_interval)
                 self.logger.debug('Probe results successfully written to data store')
             except Exception as e:
                 self.logger.error('Could not connect to data store')

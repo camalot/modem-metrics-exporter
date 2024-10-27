@@ -1,3 +1,4 @@
+import re
 import traceback
 import typing
 
@@ -10,6 +11,10 @@ from prometheus_client.core import GaugeMetricFamily
 from prometheus_client.core import Metric
 from config import ApplicationConfiguration
 class Collector:
+    METRIC_SAFE_RE = re.compile(r'^[a-zA-Z_:][a-zA-Z0-9_:]*$')
+    METRIC_ALLOWED_PATTERN = re.compile(r'[a-zA-Z0-9_:]')
+
+    
     def __init__(self, modem):
         self.config = ApplicationConfiguration
         self.namespace = self.config.presentation.namespace
@@ -25,7 +30,13 @@ class Collector:
 
 
     def safe_name(self, name):
-        return name.replace(' ', '_').replace('.', '_').replace('-', '_').lower()
+        name = name.replace(' ', '_').replace('.', '_').replace('-', '_').lower()
+        if not self.METRIC_SAFE_RE.match(name):
+            # replace all invalid characters that match METRIC_ALLOWED_PATTERN with _
+            name = ''.join(c if self.METRIC_ALLOWED_PATTERN.match(c) else '_' for c in name).strip('_')
+        # replace all __ with _
+        name = re.sub(r'_+', '_', name)
+        return name
 
     def metric_safe_name(self, name):
         safe_name = self.safe_name(name)

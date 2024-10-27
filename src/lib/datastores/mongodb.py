@@ -1,5 +1,6 @@
 import typing
 
+import lib.utils as utils
 from config import ApplicationConfiguration
 from lib.datastores.datastore import DataStore
 from pymongo import MongoClient
@@ -17,7 +18,10 @@ class MongoDBDatastore(DataStore):
 
     def write(self, topic: str, data: dict, ttl: int) -> bool:
         try:
-            result = self.collection.update_one({"id": topic}, {"$set": {"data": data, "ttl": ttl}}, upsert=True)
+            timestamp = utils.get_timestamp()
+            result = self.collection.update_one(
+                {"id": topic}, {"$set": {"data": data, "ttl": ttl, "created_at": timestamp}}, upsert=True
+            )
             return True if result else False
         except Exception as e:
             self.logger.error(f"Error writing to MongoDB: {e}")

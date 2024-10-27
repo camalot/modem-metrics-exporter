@@ -2,12 +2,12 @@ import asyncio
 import signal
 import traceback
 from concurrent.futures import ProcessPoolExecutor
-from lib.presentations.PrometheusPresentation import PrometheusPresentation
-from lib.probes.ProbeFactory import ProbeFactory
 
 from config import ApplicationConfiguration
 from dotenv import find_dotenv, load_dotenv
 from lib.logging import setup_logging
+from lib.presentations.PrometheusPresentation import PrometheusPresentation
+from lib.probes.ProbeFactory import ProbeFactory
 
 load_dotenv(find_dotenv())
 

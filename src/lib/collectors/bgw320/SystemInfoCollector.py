@@ -1,10 +1,9 @@
 import typing
 
-from prometheus_client.core import GaugeMetricFamily
-from prometheus_client.core import Metric
-from prometheus_client.core import InfoMetricFamily
-from lib.collectors.bgw320.BGW320Collector import BGW320Collector
 import lib.utils as utils
+from lib.collectors.bgw320.BGW320Collector import BGW320Collector
+from prometheus_client.core import GaugeMetricFamily, InfoMetricFamily, Metric
+
 
 class SystemInfoCollector(BGW320Collector):
     def __init__(self, modem):
@@ -40,31 +39,22 @@ class SystemInfoCollector(BGW320Collector):
             if utils.is_datetime(value, '%Y/%m/%d %H:%M:%S'):
                 value = utils.diff_now(utils.to_datetime(value, '%Y/%m/%d %H:%M:%S'))
                 g = GaugeMetricFamily(
-                    name=self.metric_safe_name(key),
-                    documentation=help,
-                    labels=['model', 'host', 'modem', 'name'],
+                    name=self.metric_safe_name(key), documentation=help, labels=['model', 'host', 'modem', 'name']
                 )
                 g.add_metric([self.modem.type, self.modem.host, self.modem.name, name], value)
                 metrics.append(g)
             elif utils.is_timedelta(value):
                 value = utils.to_timedelta(value)
                 g = GaugeMetricFamily(
-                    name=self.metric_safe_name(key),
-                    documentation=help,
-                    labels=['model', 'host', 'modem', 'name'],
+                    name=self.metric_safe_name(key), documentation=help, labels=['model', 'host', 'modem', 'name']
                 )
                 g.add_metric([self.modem.type, self.modem.host, self.modem.name, name], value.total_seconds())
                 metrics.append(g)
             else:
                 info = InfoMetricFamily(
-                    name=self.metric_safe_name(''),
-                    documentation=help,
-                    labels=['model', 'host', 'modem', 'name'],
+                    name=self.metric_safe_name(''), documentation=help, labels=['model', 'host', 'modem', 'name']
                 )
-                info.add_metric(
-                    [self.modem.type, self.modem.host, self.modem.name, name],
-                    {'value': value, 'key': key}
-                )
+                info.add_metric([self.modem.type, self.modem.host, self.modem.name, name], {'value': value, 'key': key})
                 metrics.append(info)
 
         return metrics

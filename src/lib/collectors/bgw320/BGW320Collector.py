@@ -1,5 +1,6 @@
 from lib.collectors.Collector import Collector
 
+
 class BGW320Collector(Collector):
     def __init__(self, modem):
         super().__init__(modem)

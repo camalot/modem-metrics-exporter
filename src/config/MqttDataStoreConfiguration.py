@@ -11,6 +11,5 @@ class MqttDataStoreConfiguration:
 
         self.topics = kwargs.get("topics", [])
 
-
     def merge(self, config: dict):
         self.__dict__.update(config)

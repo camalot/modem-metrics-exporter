@@ -1,7 +1,7 @@
 import re
 
-from lib.probes.Probe import Probe
 import lib.utils as utils
+from lib.probes.Probe import Probe
 
 
 class FiberStatusProbe(Probe):

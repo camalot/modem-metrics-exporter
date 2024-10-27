@@ -4,8 +4,8 @@ from config.ProbeDataStoreConfiguration import ProbeDataStoreConfiguration
 
 
 class ProbeConfiguration:
-  def __init__(self, *args, **kwargs):
-        base:dict = kwargs.get('base', {})
+    def __init__(self, **kwargs):
+        base: dict = kwargs.get('base', {})
 
         self.type = base.get('type', None)
         self.enabled = base.get('enabled', False)
@@ -23,6 +23,8 @@ class ProbeConfiguration:
             # if topic exists in the array, then do not add it to the datastore array
             if f'{datastore}:{topic}' not in [f'{ds.type}:{ds.topic}' for ds in datastores] and datastore:
                 print(f'Adding {datastore}:{topic} to datastores')
-                datastore_config = ProbeDataStoreConfiguration(**{'type': datastore, 'topic':topic, 'enabled': self.enabled})
+                datastore_config = ProbeDataStoreConfiguration(
+                    **{'type': datastore, 'topic':topic, 'enabled': self.enabled}
+                )
                 datastores.append(datastore_config)
         self.datastores = datastores

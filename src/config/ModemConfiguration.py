@@ -1,9 +1,10 @@
 import typing
 
-from lib.enums.ConfigurationDefaults import ConfigurationDefaults
-from lib.enums.YamlVars import YamlVars
 from config.CollectorConfiguration import CollectorConfiguration
 from config.ProbeConfiguration import ProbeConfiguration
+from lib.enums.ConfigurationDefaults import ConfigurationDefaults
+from lib.enums.YamlVars import YamlVars
+
 
 class ModemConfiguration:
     def __init__(self, base: dict = {}, load: bool = True):

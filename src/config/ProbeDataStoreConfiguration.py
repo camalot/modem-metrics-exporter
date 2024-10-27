@@ -1,4 +1,3 @@
-
 class ProbeDataStoreConfiguration:
     def __init__(self, **kwargs):
         self.type = kwargs.get('type', 'FILE')

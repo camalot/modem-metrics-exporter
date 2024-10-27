@@ -1,11 +1,8 @@
 import typing
 
-from lib.collectors.bgw320.BGW320Collector import BGW320Collector
 import lib.utils as utils
-
-from prometheus_client.core import Metric
-from prometheus_client.core import InfoMetricFamily
-from prometheus_client.core import GaugeMetricFamily
+from lib.collectors.bgw320.BGW320Collector import BGW320Collector
+from prometheus_client.core import GaugeMetricFamily, InfoMetricFamily, Metric
 
 
 class FiberStatusCollector(BGW320Collector):
@@ -42,14 +39,9 @@ class FiberStatusCollector(BGW320Collector):
             name = section_data.get('name', section)
 
             g = GaugeMetricFamily(
-                name=self.metric_safe_name(section),
-                documentation=help,
-                labels=['model', 'host', 'modem', 'name'],
+                name=self.metric_safe_name(section), documentation=help, labels=['model', 'host', 'modem', 'name']
             )
-            g.add_metric(
-                [self.modem.type, self.modem.host, self.modem.name, name],
-                float(value),
-            )
+            g.add_metric([self.modem.type, self.modem.host, self.modem.name, name], float(value))
             metrics.append(g)
 
             threshold_gauge = GaugeMetricFamily(
@@ -79,45 +71,45 @@ class FiberStatusCollector(BGW320Collector):
             metrics.append(threshold_gauge)
         fiber = data.get('fiber', {})
         for key in fiber.keys():
-                fiber_item = fiber[key]
+            fiber_item = fiber[key]
 
-                value = fiber_item.get('value', '0')
-                name = fiber_item.get('name', key)
+            value = fiber_item.get('value', '0')
+            name = fiber_item.get('name', key)
 
-                help = self.get_help(key, metadata)
+            help = self.get_help(key, metadata)
 
-                if value.isnumeric():
-                    g = GaugeMetricFamily(
-                        name=self.metric_safe_name(f'{key}'),
-                        documentation=help,
-                        labels=['model', 'host', 'modem', 'name'],
-                    )
-                    g.add_metric(
-                        [self.modem.type, self.modem.host, self.modem.name, name],
-                        float(value),
-                    )
-                    metrics.append(g)
-                elif utils.is_booleanable(value):
-                    g = GaugeMetricFamily(
-                        name=self.metric_safe_name(f'{key}'),
-                        documentation=help,
-                        labels=['model', 'host', 'modem', 'name'],
-                    )
-                    g.add_metric(
-                        [self.modem.type, self.modem.host, self.modem.name, name],
-                        utils.to_boolean(value),
-                    )
-                    metrics.append(g)
-                else:
-                    info = InfoMetricFamily(
-                        name=self.metric_safe_name(''),
-                        documentation=help,
-                        labels=['model', 'host', 'modem', 'name'],
-                    )
-                    info.add_metric(
-                        [self.modem.type, self.modem.host, self.modem.name, name],
-                        {'value': value, 'key': key},
-                    )
-                    metrics.append(info)
+            if value.isnumeric():
+                g = GaugeMetricFamily(
+                    name=self.metric_safe_name(f'{key}'),
+                    documentation=help,
+                    labels=['model', 'host', 'modem', 'name'],
+                )
+                g.add_metric(
+                    [self.modem.type, self.modem.host, self.modem.name, name],
+                    float(value),
+                )
+                metrics.append(g)
+            elif utils.is_booleanable(value):
+                g = GaugeMetricFamily(
+                    name=self.metric_safe_name(f'{key}'),
+                    documentation=help,
+                    labels=['model', 'host', 'modem', 'name'],
+                )
+                g.add_metric(
+                    [self.modem.type, self.modem.host, self.modem.name, name],
+                    utils.to_boolean(value),
+                )
+                metrics.append(g)
+            else:
+                info = InfoMetricFamily(
+                    name=self.metric_safe_name(''),
+                    documentation=help,
+                    labels=['model', 'host', 'modem', 'name'],
+                )
+                info.add_metric(
+                    [self.modem.type, self.modem.host, self.modem.name, name],
+                    {'value': value, 'key': key},
+                )
+                metrics.append(info)
 
         return metrics

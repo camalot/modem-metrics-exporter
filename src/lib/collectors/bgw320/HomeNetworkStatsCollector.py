@@ -1,21 +1,16 @@
 import typing
-import traceback
 
-from prometheus_client.core import CounterMetricFamily
 from prometheus_client.core import GaugeMetricFamily
 from prometheus_client.core import Metric
 from prometheus_client.core import InfoMetricFamily
 from lib.collectors.bgw320.BGW320Collector import BGW320Collector
-from lib.datastores.factory import DatastoreFactory
-from lib.enums.DataStoreTypes import DataStoreTypes
-from lib.models.ProbeResult import ProbeResult
 import lib.utils as utils
+
 
 class HomeNetworkStatsCollector(BGW320Collector):
     def __init__(self, modem):
         super().__init__(modem)
         self.subspace = self.safe_name('lan')
-
 
     def collect(self) -> typing.List[Metric]:
         metrics: typing.List[Metric] = []
@@ -29,7 +24,6 @@ class HomeNetworkStatsCollector(BGW320Collector):
             data = probe_data.data
 
         metrics.extend(self.get_base_metrics(probe_data=probe_data, collector_state=collector_state))
-
 
         if data is None:
             return metrics
@@ -82,7 +76,9 @@ class HomeNetworkStatsCollector(BGW320Collector):
                     documentation=self.get_help(name, metadata),
                     labels=['model', 'host', 'modem', 'name'],
                 )
-                info.add_metric([self.modem.type, self.modem.host, self.modem.name, name], {'key': group, 'value': value})
+                info.add_metric(
+                    [self.modem.type, self.modem.host, self.modem.name, name], {'key': group, 'value': value}
+                )
                 metrics.append(info)
         return metrics
 
@@ -91,12 +87,7 @@ class HomeNetworkStatsCollector(BGW320Collector):
         for section in data.keys():
             name = utils.strip_string(data[section]['name'])
             ports = ['port1', 'port2', 'port3', 'port4']
-            lookup = {
-                'port1': 'Port 1',
-                'port2': 'Port 2',
-                'port3': 'Port 3',
-                'port4': 'Port 4',
-            }
+            lookup = {'port1': 'Port 1', 'port2': 'Port 2', 'port3': 'Port 3', 'port4': 'Port 4'}
             for port in ports:
                 g = GaugeMetricFamily(
                     name=self.metric_safe_name(f'{name}'),
@@ -114,7 +105,7 @@ class HomeNetworkStatsCollector(BGW320Collector):
                 metrics.append(g)
         return metrics
 
-    def porcess_wifi_item(self, value, section, group, name, metadata, freq) -> typing.List[Metric]:
+    def process_wifi_item(self, value, section, group, name, metadata, freq) -> typing.List[Metric]:
         metrics = []
         if utils.is_booleanable(value):
             g = GaugeMetricFamily(
@@ -124,9 +115,7 @@ class HomeNetworkStatsCollector(BGW320Collector):
             )
 
             value_bool = utils.to_boolean(value)
-            g.add_metric(
-                [self.modem.type, self.modem.host, self.modem.name, name, freq], 1 if value_bool else 0
-            )
+            g.add_metric([self.modem.type, self.modem.host, self.modem.name, name, freq], 1 if value_bool else 0)
             metrics.append(g)
         elif utils.is_string_list(value, '/'):
             i = InfoMetricFamily(
@@ -136,9 +125,14 @@ class HomeNetworkStatsCollector(BGW320Collector):
             )
             group_plural = f'{group}s'
             name_plural = f'{name}s'
-            i.add_metric([self.modem.type, self.modem.host, self.modem.name, name_plural, freq], {'key': group_plural, 'value': value})
+            i.add_metric(
+                [self.modem.type, self.modem.host, self.modem.name, name_plural, freq],
+                {'key': group_plural, 'value': value},
+            )
             for v in utils.to_string_list(value, '/'):
-                i.add_metric([self.modem.type, self.modem.host, self.modem.name, name, freq], {'key': group, 'value': v})
+                i.add_metric(
+                    [self.modem.type, self.modem.host, self.modem.name, name, freq], {'key': group, 'value': v}
+                )
             metrics.append(i)
         elif utils.is_string_list(value, ','):
             for v in utils.to_string_list(value):
@@ -172,7 +166,9 @@ class HomeNetworkStatsCollector(BGW320Collector):
                 documentation=self.get_help(name, metadata),
                 labels=['model', 'host', 'modem', 'name', 'frequency'],
             )
-            i.add_metric([self.modem.type, self.modem.host, self.modem.name, name, freq], {'key': group, 'value': value})
+            i.add_metric(
+                [self.modem.type, self.modem.host, self.modem.name, name, freq], {'key': group, 'value': value}
+            )
             metrics.append(i)
         return metrics
 
@@ -180,10 +176,7 @@ class HomeNetworkStatsCollector(BGW320Collector):
         metrics = []
         for group in data.keys():
             frequencies = ['ghz24', 'ghz5']
-            lookup = {
-                'ghz24': '2.4GHz',
-                'ghz5': '5GHz'
-            }
+            lookup = {'ghz24': '2.4GHz', 'ghz5': '5GHz'}
             for f in frequencies:
 
                 value = data[group][f]
@@ -198,13 +191,13 @@ class HomeNetworkStatsCollector(BGW320Collector):
                             name = utils.strip_string(names[i])
                         else:
                             name = utils.strip_string(names)
-                        
-                        wifi_metrics = self.porcess_wifi_item(v, section, group, name, metadata, lookup[f])
+
+                        wifi_metrics = self.process_wifi_item(v, section, group, name, metadata, lookup[f])
                         metrics.extend(wifi_metrics)
                 else:
                     name = utils.strip_string(data[group]['name'])
                     # single value
-                    wifi_metrics = self.porcess_wifi_item(value, section, group, name, metadata, lookup[f])
+                    wifi_metrics = self.process_wifi_item(value, section, group, name, metadata, lookup[f])
                     metrics.extend(wifi_metrics)
 
 

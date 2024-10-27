@@ -1,4 +1,3 @@
-
 class ProbeFactory:
     @staticmethod
     def create(modem, type: str):

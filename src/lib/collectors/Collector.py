@@ -2,19 +2,18 @@ import re
 import traceback
 import typing
 
+from config import ApplicationConfiguration
 from lib.datastores.factory import DatastoreFactory
 from lib.enums.DataStoreTypes import DataStoreTypes
 from lib.logging import setup_logging
 from lib.models.ProbeResult import ProbeResult
-from prometheus_client.core import GaugeMetricFamily
+from prometheus_client.core import GaugeMetricFamily, Metric
 
-from prometheus_client.core import Metric
-from config import ApplicationConfiguration
+
 class Collector:
     METRIC_SAFE_RE = re.compile(r'^[a-zA-Z_:][a-zA-Z0-9_:]*$')
     METRIC_ALLOWED_PATTERN = re.compile(r'[a-zA-Z0-9_:]')
 
-    
     def __init__(self, modem):
         self.config = ApplicationConfiguration
         self.namespace = self.config.presentation.namespace
@@ -27,7 +26,6 @@ class Collector:
                 # self.logger.debug(f'Found config for {self.__class__.__name__}')
                 self._config = cc
                 break
-
 
     def safe_name(self, name):
         name = name.replace(' ', '_').replace('.', '_').replace('-', '_').lower()

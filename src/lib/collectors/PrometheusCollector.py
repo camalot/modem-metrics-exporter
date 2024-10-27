@@ -2,10 +2,7 @@ import traceback
 
 from config import ApplicationConfiguration
 from lib.collectors.CollectorFactory import CollectorFactory
-from lib.datastores.factory import DatastoreFactory
-from lib.enums.ConfigurationDefaults import ConfigurationDefaults
 from lib.logging import setup_logging
-from prometheus_client.core import GaugeMetricFamily
 from prometheus_client.registry import Collector
 
 

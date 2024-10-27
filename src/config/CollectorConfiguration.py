@@ -1,6 +1,6 @@
 class CollectorConfiguration:
     def __init__(self, *args, **kwargs):
-        base:dict = kwargs.get('base', {})
+        base: dict = kwargs.get('base', {})
 
         self.type = base.get('type', None)
         self.enabled = base.get('enabled', False)

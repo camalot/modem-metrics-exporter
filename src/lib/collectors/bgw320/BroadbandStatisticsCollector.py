@@ -1,10 +1,8 @@
 import typing
 
-from prometheus_client.core import GaugeMetricFamily
-from prometheus_client.core import InfoMetricFamily
-from prometheus_client.core import Metric
-from lib.collectors.bgw320.BGW320Collector import BGW320Collector
 import lib.utils as utils
+from lib.collectors.bgw320.BGW320Collector import BGW320Collector
+from prometheus_client.core import GaugeMetricFamily, InfoMetricFamily, Metric
 
 
 class BroadbandStatisticsCollector(BGW320Collector):
@@ -42,9 +40,7 @@ class BroadbandStatisticsCollector(BGW320Collector):
                 if utils.is_booleanable(value):
                     value = utils.to_boolean(value)
                     g = GaugeMetricFamily(
-                        name=self.metric_safe_name(key),
-                        documentation=help,
-                        labels=['model', 'host', 'modem', 'name'],
+                        name=self.metric_safe_name(key), documentation=help, labels=['model', 'host', 'modem', 'name']
                     )
                     g.add_metric([self.modem.type, self.modem.host, self.modem.name, name], value)
                     metrics.append(g)
@@ -60,9 +56,7 @@ class BroadbandStatisticsCollector(BGW320Collector):
                     metrics.append(g)
                 else:
                     info = InfoMetricFamily(
-                        name=self.metric_safe_name(''),
-                        documentation=help,
-                        labels=['model', 'host', 'modem', 'name'],
+                        name=self.metric_safe_name(''), documentation=help, labels=['model', 'host', 'modem', 'name']
                     )
                     info.add_metric(
                         [self.modem.type, self.modem.host, self.modem.name, name],

@@ -1,16 +1,17 @@
 import json
-import requests
 import signal
 import time
 import traceback
 import typing
 
+import requests
 from config import ApplicationConfiguration
 from config.ProbeDataStoreConfiguration import ProbeDataStoreConfiguration
 from lib.datastores.factory import DatastoreFactory
 from lib.enums.DataStoreTypes import DataStoreTypes
 from lib.logging import setup_logging
 from lib.models.ProbeResult import ProbeResult
+
 
 class Probe:
     def __init__(self, modem):

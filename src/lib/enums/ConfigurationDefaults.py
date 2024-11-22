@@ -29,6 +29,7 @@ class ConfigurationDefaults:
     MODEM_PORT = 80
     MODEM_SCHEME = "http"
     MODEM_TYPE = "bgw320"
+    MODEM_ENABLED = True
 
     MONGODB_URL = "mongodb://localhost:27017/admin"
     MONGODB_DB = "modemprobe"

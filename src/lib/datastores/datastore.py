@@ -9,7 +9,7 @@ class DataStore:
         config = ApplicationConfiguration
         self.logger = setup_logging(self.__class__.__name__, config.logging)
 
-    def read(self, topic: str) -> typing.Any:
+    def read(self, topic: str) -> typing.Optional[dict]:
         return None
 
     def write(self, topic: str, data: dict, ttl: int) -> bool:

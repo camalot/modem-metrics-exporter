@@ -1,19 +1,16 @@
-import json
 import re
-import requests
 
+import lib.utils as utils
 from lib.probes.Probe import Probe
 
 
 class HomeNetworkStatsProbe(Probe):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, modem):
+        super().__init__(modem)
         self.name = self.__class__.__name__
-        self.logger.debug(f'Starting {self.name}')
+        self.logger.debug(f'Initializing {self.name}')
         self.endpoint = '/cgi-bin/lanstatistics.ha'
-        self.topic = 'modemprobe/lanstats'
-        self.enabled = True
-        self.interval = 60
+
         self.help_pattern = r'<strong>(?P<property>.*?):</strong>\s*(?P<help>.*?)<br\s*/><br\s*/>'
 
         self.groups = [
@@ -66,15 +63,19 @@ class HomeNetworkStatsProbe(Probe):
         for group in self.groups:
             matches = re.finditer(group['pattern'], response, re.IGNORECASE | re.DOTALL)
             for _, match in enumerate(matches):
-                section = group.get('name', 'unknown').lower().strip().replace('&nbsp;', '').replace(' ', '')
+                original_name = utils.strip_string(match.group('section'))
+                section = utils.clean_name_string(group.get('name', 'unknown'))
                 stats = match.group('stats')
                 if section not in result:
                     result[section] = {}
                 if 'value' in match.groupdict():
                     result[section]['value'] = match.group('value')
+                    if 'name' not in result[section]:
+                        result[section]['name'] = original_name
                 stats_result = self.parse_stats(section, stats, group['stats'], options=group['options'])
                 if stats_result:
                     result.update(stats_result)
+
         # get all help text
         matches = re.finditer(self.help_pattern, response, re.IGNORECASE | re.MULTILINE)
         if 'metadata' not in result:
@@ -84,7 +85,7 @@ class HomeNetworkStatsProbe(Probe):
         for _, match in enumerate(matches):
             property = match.group('property')
             help = match.group('help')
-            result['metadata']['help'][property.replace(' ', '').lower()] = help
+            result['metadata']['help'][utils.clean_name_string(property)] = help
 
         return result
 
@@ -92,22 +93,30 @@ class HomeNetworkStatsProbe(Probe):
         result = {}
         matches = re.finditer(pattern, stats, kwargs['options'])
         for _, match in enumerate(matches):
-            name = match.group('name').lower().strip().replace('&nbsp;', '').replace(' ', '')
+            original_name = utils.strip_string(match.group('name'))
+            key = utils.clean_name_string(original_name)
 
             if section not in result:
                 result[section] = {}
-            if name not in result[section]:
-                result[section][name] = {}
+            if key not in result[section]:
+                result[section][key] = {}
 
             match_group = match.groupdict()
             group_keys = match_group.keys()
             if len(group_keys) == 2 and 'name' in group_keys and 'value' in group_keys:
-                result[section][name] = match.group('value').strip().replace('&nbsp;', '')
+                result[section][key]['value'] = utils.clean_string(match.group('value'))
+                result[section][key]['name'] = original_name
             else:
                 for x in match.groupdict().keys():
                     mval = match.group(x)
                     if mval:
-                        result[section][name][x] = match.group(x).strip().replace('&nbsp;', '')
+                        if x in result[section][key]:
+                            # move the old one to an array
+                            old_val = result[section][key][x]
+                            # add the new one to the array
+                            result[section][key][x] = [old_val, utils.clean_string(mval)]
+                        else:
+                            result[section][key][x] = utils.clean_string(match.group(x))
                     else:
-                        result[section][name][x] = None
+                        result[section][key][x] = None
         return result

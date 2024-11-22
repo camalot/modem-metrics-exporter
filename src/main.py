@@ -1,15 +1,13 @@
 import asyncio
 import signal
+import traceback
 from concurrent.futures import ProcessPoolExecutor
-from lib.probes.bgw320.BroadbandStatisticsProbe import BroadbandStatisticsProbe
-from lib.probes.bgw320.FiberStatusProbe import FiberStatusProbe
-from lib.probes.bgw320.HomeNetworkStatsProbe import HomeNetworkStatsProbe
-from lib.probes.bgw320.SystemInfoProbe import SystemInfoProbe
-from lib.presentations.PrometheusPresentation import PrometheusPresentation
 
 from config import ApplicationConfiguration
 from dotenv import find_dotenv, load_dotenv
 from lib.logging import setup_logging
+from lib.presentations.PrometheusPresentation import PrometheusPresentation
+from lib.probes.ProbeFactory import ProbeFactory
 
 load_dotenv(find_dotenv())
 
@@ -32,51 +30,21 @@ class ModemProbe:
             self.logger.warning('<KeyboardInterrupt received>')
             exit(0)
 
-    # def speedtest(self):
-    #     try:
-    #         speedtest = SpeedTestProbe()
-    #         self.logger.debug('Starting Speed Test')
-    #         speedtest.run()
-    #     except KeyboardInterrupt:
-    #         self.logger.warning('<KeyboardInterrupt received>')
-    #         exit(0)
-
-    def SystemInfoProbe(self):
+    def run_probes(self, loop: asyncio.AbstractEventLoop, executor: ProcessPoolExecutor):
         try:
-            print("init probe")
-            probe = SystemInfoProbe()
-            # self.logger.debug('Starting probe')
-            probe.run()
-        except KeyboardInterrupt:
-            self.logger.warning('<KeyboardInterrupt received>')
-            exit(0)
+            for modem in self.config.modems:
+                self.logger.debug(f'creating probes for {modem.name} : {modem.type}')
+                probes = modem.probes
+                for probe in probes:
+                    try:
+                        self.logger.debug(f'creating probe {probe.type}')
+                        probe_instance = ProbeFactory.create(modem, probe.type)
+                        loop.run_in_executor(executor, probe_instance.run)
+                    except Exception as e:
+                        self.logger.error(e)
+                        self.logger.error(traceback.format_exc())
+                        continue
 
-    def BroadbandStatisticsProbe(self):
-        try:
-            print("init probe")
-            probe = BroadbandStatisticsProbe()
-            # self.logger.debug('Starting probe')
-            probe.run()
-        except KeyboardInterrupt:
-            self.logger.warning('<KeyboardInterrupt received>')
-            exit(0)
-
-    def FiberStatusProbe(self):
-        try:
-            print("init probe")
-            probe = FiberStatusProbe()
-            # self.logger.debug('Starting probe')
-            probe.run()
-        except KeyboardInterrupt:
-            self.logger.warning('<KeyboardInterrupt received>')
-            exit(0)
-
-    def HomeNetworkStatsProbe(self):
-        try:
-            print("init probe")
-            probe = HomeNetworkStatsProbe()
-            # self.logger.debug('Starting probe')
-            probe.run()
         except KeyboardInterrupt:
             self.logger.warning('<KeyboardInterrupt received>')
             exit(0)
@@ -84,7 +52,6 @@ class ModemProbe:
 
 if __name__ == '__main__':
     modemprobe = ModemProbe()
-    print('Starting main')
     try:
         loop = asyncio.new_event_loop()
         signal.signal(signal.SIGTERM, modemprobe.sighandler)
@@ -92,12 +59,7 @@ if __name__ == '__main__':
             executor = ProcessPoolExecutor()
 
             loop.run_in_executor(executor, modemprobe.presentation)
-
-            loop.run_in_executor(executor, modemprobe.SystemInfoProbe)
-            loop.run_in_executor(executor, modemprobe.BroadbandStatisticsProbe)
-            loop.run_in_executor(executor, modemprobe.FiberStatusProbe)
-            loop.run_in_executor(executor, modemprobe.HomeNetworkStatsProbe)
-
+            modemprobe.run_probes(loop, executor)
 
             loop.run_forever()
         except DeprecationWarning:

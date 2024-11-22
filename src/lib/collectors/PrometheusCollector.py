@@ -2,10 +2,7 @@ import traceback
 
 from config import ApplicationConfiguration
 from lib.collectors.CollectorFactory import CollectorFactory
-from lib.datastores.factory import DatastoreFactory
-from lib.enums.ConfigurationDefaults import ConfigurationDefaults
 from lib.logging import setup_logging
-from prometheus_client.core import GaugeMetricFamily
 from prometheus_client.registry import Collector
 
 
@@ -26,17 +23,18 @@ class PrometheusCollector(Collector):
         return f'{self.namespace}_{safe_name}'
 
     def collect(self):
-        modem_type = self.config.modem.type
-        collectors = self.config.modem.collectors
-        for collector in collectors:
-            try:
-                collector_instance = CollectorFactory.create(modem_type, collector.type)
-                metrics = collector_instance.collect() or []
-                for metric in metrics:
-                    if metric:
-                        yield metric
+        for modem in self.config.modems:
+            self.logger.debug(f'creating collectors for {modem.name} : {modem.type}')
+            collectors = modem.collectors
+            for collector in collectors:
+                try:
+                    collector_instance = CollectorFactory.create(modem, collector.type)
+                    metrics = collector_instance.collect() or []
+                    for metric in metrics:
+                        if metric:
+                            yield metric
 
-            except Exception as e:
-                self.logger.error(e)
-                self.logger.error(traceback.format_exc())
-                continue
+                except Exception as e:
+                    self.logger.error(e)
+                    self.logger.error(traceback.format_exc())
+                    continue

@@ -1,0 +1,167 @@
+groups:
+  - name: BGW320 Alerts
+    rules:
+      # Alert around the device sensors exceeding a threshold that triggers a warning
+      - alert: ModemDeviceSensorWarning
+        expr: modemprobe_device_warning != 0
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.modem }} had a {{ $labels.sensor }} {{$labels.type}} warning for last 2 minutes."
+          description: "{{ $labels.modem }} had a {{ $labels.sensor }} {{$labels.type}} warning for last 2 minutes."
+
+      # Alert around the device sensors exceeding a threshold that triggers an alert
+      - alert: ModemDeviceSensorAlert
+        expr: modemprobe_device_alert != 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "{{ $labels.modem }} had a {{ $labels.sensor }} {{$labels.type}} alert for last 2 minutes."
+          description: "{{ $labels.modem }} had a {{ $labels.sensor }} {{$labels.type}} alert for last 2 minutes."
+
+      # Alert around the device link state being down
+      - alert: ModemDeviceLinkStateDownWarning
+        expr: modemprobe_device_linkstate == 0
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.modem }} had a link down for last 1 minute."
+          description: "{{ $labels.modem }} had a link down for last 1 minute."
+
+      # Alert around the device link state being down
+      - alert: ModemDeviceLinkStateDownCritical
+        expr: modemprobe_device_linkstate == 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "{{ $labels.modem }} had a link down for last 5 minutes."
+          description: "{{ $labels.modem }} had a link down for last 5 minutes."
+
+      # Alert if the collectors are unable to collect data
+      - alert: ModemDeviceCollectorDownWarning
+        expr: modemprobe_collector == 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.modem }} had a collector {{ $labels.type }} down for last 5 minutes on host {{ $labels.host }}."
+          description: "{{ $labels.modem }} had a collector {{ $labels.type }} down for last 5 minutes on host {{ $labels.host }}."
+
+      # Alert if the collectors are unable to probe data
+      - alert: ModemDeviceProbeDownWarning
+        expr: modemprobe_probe == 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.modem }} had a probe {{ $labels.type }} down for last 5 minutes on host {{ $labels.host }}."
+          description: "{{ $labels.modem }} had a probe {{ $labels.type }} down for last 5 minutes on host {{ $labels.host }}."
+
+      - alert: ModemBroadbandLineStatusWarning
+        expr: modemprobe_broadband_linestatus != 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.modem }} had a broadband line status warning for last 5 minutes."
+          description: "{{ $labels.modem }} had a broadband line status warning for last 5 minutes."
+
+      - alert: ModemBroadbandLineStatusCritical
+        expr: modemprobe_broadband_linestatus != 1
+        for: 15m
+        labels:
+          severity: critical
+        annotations:
+          summary: "{{ $labels.modem }} had a broadband line status warning for last 15 minutes."
+          description: "{{ $labels.modem }} had a broadband line status warning for last 15 minutes."
+
+      - alert: ModemBroadbandIPv4TransmitErrorsWarning
+        expr: |
+          irate(modemprobe_broadband_ipv4_transmiterrors[2m]) / irate(modemprobe_broadband_ipv4_transmitpackets[2m]) > 0.01
+        annotations:
+          description: "{{ $labels.modem }} has encountered {{ $value | humanizePercentage }} transmit errors in the last two minutes."
+          summary: "{{ $labels.modem }} is reporting many transmit errors."
+        for: "1h"
+        labels:
+          severity: "warning"
+
+      - alert: ModemBroadbandIPv4ReceiveErrorsWarning
+        expr: |
+          irate(modemprobe_broadband_ipv4_receiveerrors[2m]) / irate(modemprobe_broadband_ipv4_receivepackets[2m]) > 0.01
+        annotations:
+          description: "{{ $labels.modem }} has encountered {{ $value | humanizePercentage }} receive errors in the last two minutes."
+          summary: "{{ $labels.modem }} is reporting many receive errors."
+        for: "1h"
+        labels:
+          severity: "warning"
+
+      - alert: ModemLanIPv4TransmitErrorsWarning
+        expr: |
+          irate(modemprobe_lan_ipv4_transmiterrors[2m]) / irate(modemprobe_lan_ipv4_transmitpackets[2m]) > 0.01
+        annotations:
+          description: "{{ $labels.modem }} has encountered {{ $value | humanizePercentage }} transmit errors in the last two minutes."
+          summary: "{{ $labels.modem }} is reporting many transmit errors."
+        for: "1h"
+        labels:
+          severity: "warning"
+
+      - alert: ModemLanIPv4ReceiveErrorsWarning
+        expr: |
+          irate(modemprobe_lan_ipv4_receiveerrors[2m]) / irate(modemprobe_lan_ipv4_receivepackets[2m]) > 0.01
+        annotations:
+          description: "{{ $labels.modem }} has encountered {{ $value | humanizePercentage }} receive errors in the last two minutes."
+          summary: "{{ $labels.modem }} is reporting many receive errors."
+        for: "1h"
+        labels:
+          severity: "warning"
+
+      - alert: ModemLanWiFiTransmitErrorsWarning
+        expr: |
+          irate(modemprobe_lan_wifistatistics_transmiterrorpackets[2m]) / irate(modemprobe_lan_wifistatistics_transmitpackets[2m]) > 0.01
+        annotations:
+          description: "{{ $labels.modem }} has encountered {{ $value | humanizePercentage }} transmit errors in the last two minutes."
+          summary: "{{ $labels.modem }} is reporting many transmit errors."
+        for: "1h"
+        labels:
+          severity: "warning"
+
+      - alert: ModemLanWiFiReceiveErrorsWarning
+        expr: |
+          irate(modemprobe_lan_wifistatistics_receiveerrorpackets[2m]) / irate(modemprobe_lan_wifistatistics_receivepackets[2m]) > 0.01
+        annotations:
+          description: "{{ $labels.modem }} has encountered {{ $value | humanizePercentage }} receive errors in the last two minutes."
+          summary: "{{ $labels.modem }} is reporting many receive errors."
+        for: "1h"
+        labels:
+          severity: "warning"
+
+      - alert: ModemLanLowDHCPPoolAvailableWarning
+        expr: modemprobe_lan_networkstatus_dhcpleasesavailable < 10
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.modem }} has less than 10 DHCP leases available."
+          description: "{{ $labels.modem }} has less than 10 DHCP leases available."
+
+      - alert: ModemLanAllPortsDownWarning
+        expr: sum(modemprobe_lan_state) == 0
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.modem }} has all LAN ports down."
+          description: "{{ $labels.modem }} has all LAN ports down."
+
+      - alert: ModemLanAllPortsDownCritical
+        expr: sum(modemprobe_lan_state) == 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "{{ $labels.modem }} has all LAN ports down for last 5 minutes."
+          description: "{{ $labels.modem }} has all LAN ports down for last 5 minutes."

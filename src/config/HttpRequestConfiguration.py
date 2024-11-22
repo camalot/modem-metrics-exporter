@@ -1,5 +1,5 @@
 class HttpRequestConfiguration:
-    def __init__(self, *args, **kwargs):
+    def __init__(self, **kwargs):
         self.url = kwargs.get('url', None)
         self.method = kwargs.get('method', 'GET')
         self.headers = kwargs.get('headers', {})

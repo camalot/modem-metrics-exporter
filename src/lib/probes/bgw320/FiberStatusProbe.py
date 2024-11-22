@@ -1,18 +1,14 @@
-import json
 import re
-import requests
 
+import lib.utils as utils
 from lib.probes.Probe import Probe
 
 
 class FiberStatusProbe(Probe):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, modem):
+        super().__init__(modem)
         self.name = self.__class__.__name__
-        self.logger.debug(f'Starting {self.name}')
-        self.topic = 'modemprobe/fiberstatus'
-        self.enabled = True
-        self.interval = 60
+        self.logger.debug(f'Initializing {self.name}')
 
         self.endpoint = '/cgi-bin/fiberstat.ha'
         self.help_pattern = r'<strong>(?P<property>.*?):</strong>\s*(?P<help>.*?)<br\s*/><br\s*/>'
@@ -61,7 +57,8 @@ class FiberStatusProbe(Probe):
         for group in self.groups:
             matches = re.finditer(group['pattern'], response, re.IGNORECASE | re.DOTALL)
             for _, match in enumerate(matches):
-                section = group.get('name', 'unknown').lower().strip().replace('&nbsp;', '').replace(' ', '')
+                original_name = utils.strip_string(match.group('section'))
+                section = utils.clean_name_string(group.get('name', 'unknown'))
                 stats = match.group('stats')
                 if section not in result:
                     result[section] = {}
@@ -70,6 +67,8 @@ class FiberStatusProbe(Probe):
                     result.update(stats_results)
                 if 'value' in match.groupdict():
                     result[section]['value'] = float(match.group('value') or '0')
+                    if 'name' not in result[section]:
+                        result[section]['name'] = original_name
         # get all help text
         matches = re.finditer(self.help_pattern, response, re.IGNORECASE | re.MULTILINE)
         if 'metadata' not in result:
@@ -79,14 +78,15 @@ class FiberStatusProbe(Probe):
         for _, match in enumerate(matches):
             property = match.group('property')
             help = match.group('help')
-            result['metadata']['help'][property.replace(' ', '').lower()] = help
+            result['metadata']['help'][utils.clean_name_string(property)] = help
         return result
 
     def parse_stats(self, section, stats, pattern, **kwargs) -> dict:
         result = {}
         matches = re.finditer(pattern, stats, kwargs['options'])
         for _, match in enumerate(matches):
-            name = match.group('name').lower().strip().replace('&nbsp;', '').replace(' ', '')
+            original_name = utils.strip_string(match.group('name'))
+            name = utils.clean_name_string(original_name)
             if section not in result:
                 result[section] = {}
             if name not in result[section]:
@@ -95,8 +95,9 @@ class FiberStatusProbe(Probe):
             match_group = match.groupdict()
             group_keys = match_group.keys()
             if len(group_keys) == 2 and 'name' in group_keys and 'value' in group_keys:
-                result[section][name] = match.group('value').strip().replace('&nbsp;', '').replace(' nm', '')
+                result[section][name]['value'] = utils.clean_string(match.group('value'))
+                result[section][name]['name'] = original_name
             else:
                 for x in match.groupdict().keys():
-                    result[section][name][x] = match.group(x).strip().replace('&nbsp;', '').replace(' nm', '')
+                    result[section][name][x] = utils.clean_string(match.group(x))
         return result

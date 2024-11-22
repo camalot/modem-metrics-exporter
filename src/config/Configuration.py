@@ -1,10 +1,9 @@
 import os
-import typing
 
 import yaml
 from config.DataStoreConfiguration import DataStoreConfiguration
 from config.LoggingConfiguration import LoggingConfiguration
-from config.ModemConfiguration import ModemConfiguration
+from config.ModemsConfiguration import ModemsConfiguration
 from config.PresentationConfiguration import PresentationConfiguration
 from dotenv import find_dotenv, load_dotenv
 from lib.enums.ConfigurationDefaults import ConfigurationDefaults
@@ -18,26 +17,25 @@ except:  # noqa: E722
 
 
 class Configuration:
-    def __init__(self, file_path: typing.Optional[str] = ConfigurationDefaults.CONFIG_FILE_PATH):
-        self.reload(file_path)
+    def __init__(self):
+        self.reload()
 
-    def reload(self, file_path: typing.Optional[str] = ConfigurationDefaults.CONFIG_FILE_PATH):
+    def reload(self):
         try:
-            file_path = EnvVars.CONFIG_FILE.file(ConfigurationDefaults.CONFIG_FILE_PATH)
+            config_file = EnvVars.CONFIG_FILE.file(ConfigurationDefaults.CONFIG_FILE_PATH)
         except FileNotFoundError:
-            file_path = None
+            config_file = None
 
-        if not file_path or not os.path.exists(file_path):
-            file_path = ConfigurationDefaults.CONFIG_FILE_PATH
+        if not config_file or not os.path.exists(config_file):
+            config_file = ConfigurationDefaults.CONFIG_FILE_PATH
 
         base_config = {}
-        # if file_path exists and is not none, load the file
-        if file_path and os.path.exists(file_path):
-            with open(file_path, 'r') as file:
-                print(f"Loading configuration from {file_path}")
+        # if config_file exists and is not none, load the file
+        if config_file and os.path.exists(config_file):
+            with open(config_file, 'r') as file:
                 base_config = yaml.safe_load(file)
 
         self.logging = LoggingConfiguration(base_config)
         self.datastore = DataStoreConfiguration(base_config)
         self.presentation = PresentationConfiguration(base_config)
-        self.modem = ModemConfiguration(base_config)
+        self.modems = ModemsConfiguration(base_config)

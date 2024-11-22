@@ -1,0 +1,11 @@
+prometheus_client~=0.20.0
+requests~=2.32
+redis~=5.0
+python-dotenv~=1.0
+dnspython~=2.6
+speedtest-cli~=2.1
+pyyaml~=6.0
+paho-mqtt~=2.1
+pymongo~=4.8
+yaql~=3.0
+setuptools~=75.1

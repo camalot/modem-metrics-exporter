@@ -3,10 +3,6 @@ from config.HttpDataStoreConfiguration import HttpDataStoreConfiguration
 from config.MongoDBDataStoreConfiguration import MongoDBDataStoreConfiguration
 from config.MqttDataStoreConfiguration import MqttDataStoreConfiguration
 from config.RedisDataStoreConfiguration import RedisDataStoreConfiguration
-from lib.enums.ConfigurationDefaults import ConfigurationDefaults
-from lib.enums.DataStoreTypes import DataStoreTypes
-from lib.enums.EnvVars import EnvVars
-from lib.enums.YamlVars import YamlVars
 
 
 class DataStoreConfiguration:

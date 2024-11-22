@@ -6,7 +6,7 @@ class ColorFormatter(logging.Formatter):
         super().__init__(fmt=fmt, datefmt=datefmt, validate=validate)
         self.colors = {
             "RESET": "\u001b[0m",
-            # FORGROUND COLORS
+            # FOREGROUND COLORS
             "FGBLACK": "\u001b[30m",
             "FGRED": "\u001b[31m",
             "FGGREEN": "\u001b[32m",

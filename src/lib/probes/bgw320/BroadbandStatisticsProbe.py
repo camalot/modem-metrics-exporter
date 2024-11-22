@@ -1,17 +1,14 @@
-import json
 import re
-import requests
 
+import lib.utils as utils
 from lib.probes.Probe import Probe
 
 
 class BroadbandStatisticsProbe(Probe):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, modem):
+        super().__init__(modem)
         self.name = self.__class__.__name__
-        self.logger.debug(f'Starting {self.name}')
-        self.enabled = True
-        self.topic = 'modemprobe/broadbandstats'
+        self.logger.debug(f'Initializing {self.name}')
         self.endpoint = '/cgi-bin/broadbandstatistics.ha'
         self.stats_pattern = r'<th[^>]*>(?P<name>.*?)(?:&nbsp;)*?\s*<\/th>\s*?<td[^>]*>\s*?(?P<value>.*?)\s*?<\/td>'
         self.help_pattern = r'<strong>(?P<property>.*?):</strong>\s*(?P<help>.*?)<br\s*/><br\s*/>'
@@ -53,7 +50,8 @@ class BroadbandStatisticsProbe(Probe):
         for group in self.groups:
             matches = re.finditer(group['pattern'], response, re.IGNORECASE | re.DOTALL)
             for _, match in enumerate(matches):
-                section = group.get('name', 'unknown').lower().strip().replace('&nbsp;', '').replace(' ', '')
+                original_name = utils.strip_string(match.group('section'))
+                section = utils.clean_name_string(group.get('name', 'unknown'))
                 stats = match.group('stats')
                 if section not in result:
                     result[section] = {}
@@ -70,7 +68,7 @@ class BroadbandStatisticsProbe(Probe):
         for _, match in enumerate(matches):
             property = match.group('property')
             help = match.group('help')
-            result['metadata']['help'][property.replace(' ', '').lower()] = help
+            result['metadata']['help'][utils.clean_name_string(property)] = help
 
         return result
 
@@ -78,11 +76,12 @@ class BroadbandStatisticsProbe(Probe):
         result = {}
         matches = re.finditer(pattern, stats, re.IGNORECASE | re.MULTILINE)
         for _, match in enumerate(matches):
-            name = match.group('name').lower().strip().replace('&nbsp;', '').replace(' ', '')
+            name = utils.strip_string(match.group('name'))
+            key = utils.clean_name_string(name)
             value = match.group('value')
             if section not in result:
                 result[section] = {}
-            if name not in result[section]:
-                result[section][name] = {}
-            result[section][name] = value
+            if key not in result[section]:
+                result[section][key] = {}
+            result[section][key] = {'name': name, 'value': value}
         return result
